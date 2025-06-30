@@ -25,7 +25,7 @@ def slack_message() -> None:
         client.files_upload_v2(
             file=os.path.expanduser("~/data/gld.csv"),
             title=fname,
-            channel=os.getenv("TEST_CHANNEL"),
+            channel=os.getenv("COOL_CHANNEL"),
             initial_comment="Gaming Laptop Deals"
         )
         logger.info("slack message sent")

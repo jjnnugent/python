@@ -1,5 +1,4 @@
 # Python-generated files
-__init__*
 __pycache__/
 *.egg-info
 *.py[oc]

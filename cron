@@ -1,15 +1,15 @@
 # crontab.guru
 
-*/20 * * * *    uv run ~/python/slack/watcher/watchlist/main.py
+*/20 * * * *    uv run --directory ~/python/slack/watcher/watchlist/ ~/python/slack/watcher/watchlist/main.py
 
-30 7 * * 3      uv run ~/python/crawl/mark.py
-30 8 * * *      uv run ~/python/slack/watcher/apod/main.py
-24 9 * * *      uv run ~/python/crawl/pcg.py
-25 9 * * *      uv run ~/python/crawl/ibp.py
-26 9 * * *      uv run ~/python/crawl/thw.py
-27 9 * * *      uv run ~/python/crawl/gld.py
-28 9 * * *      uv run ~/python/crawl/bgl.py
-29 9 * * 2      uv run ~/python/slack/meeseeks/tools/gld.py
-30 9 * * 2      uv run ~/python/slack/meeseeks/tools/gld_csv.py
+30 7 * * 3      uv run --directory ~/python/crawl/ ~/python/crawl/mark.py
+30 8 * * *      uv run --directory ~/python/slack/watcher/apod/ ~/python/slack/watcher/apod/main.py
+24 9 * * *      uv run --directory ~/python/crawl/ ~/python/crawl/pcg.py
+25 9 * * *      uv run --directory ~/python/crawl/ ~/python/crawl/ibp.py
+26 9 * * *      uv run --directory ~/python/crawl/ ~/python/crawl/thw.py
+27 9 * * *      uv run --directory ~/python/crawl/ ~/python/crawl/gld.py
+28 9 * * *      uv run --directory ~/python/crawl/ ~/python/crawl/bgl.py
+29 9 * * 2      uv run --directory ~/python/slack/meeseeks/ ~/python/slack/meeseeks/tools/gld.py
+30 9 * * 2      uv run --directory ~/python/slack/meeseeks/ ~/python/slack/meeseeks/tools/gld_csv.py
 
 @reboot sleep 30 && /HOMEDIR/scripts/startup.sh

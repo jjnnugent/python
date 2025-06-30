@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 from logging.config import fileConfig
 import logging
 import json
@@ -6,6 +7,7 @@ import os
 from curl_cffi import requests
 from selectolax.parser import HTMLParser
 
+load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger(name="gl-pcg")
 

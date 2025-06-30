@@ -55,7 +55,7 @@ def slack_message(
     client = WebClient(token=os.getenv("WATCHER_TOKEN"))
     try:
         client.chat_postMessage(
-            channel=os.getenv("APOD_CHANNEL"),
+            channel=os.getenv("TEST_CHANNEL"),
             unfurl_links=links,
             unfurl_media=media,
             blocks=block,

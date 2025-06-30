@@ -1,6 +1,5 @@
 # crontab.guru
 
-*/5 * * * *     ~/duckdns/duck.sh >/dev/null 2>&1
 */20 * * * *    python3 ~/python/slack/watcher/watchlist/main.py
 
 30 7 * * 3      python3 ~/python/crawl/mark.py
@@ -12,6 +11,5 @@
 28 9 * * *     python3 ~/python/crawl/bgl.py
 29 9 * * 2     python3 ~/python/slack/meeseeks/tools/gld.py
 30 9 * * 2     python3 ~/python/slack/meeseeks/tools/gld_csv.py
-#30 13 * * *    python3 ~/python/crawl/tftdb.py
 
-@reboot sleep 60 && /home/pi/scripts/startup.sh
+@reboot sleep 30 && /home/pi/scripts/startup.sh

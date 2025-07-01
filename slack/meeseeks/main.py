@@ -81,4 +81,4 @@ def command_zon(ack, command, respond) -> None:
 
 
 if __name__ == "__main__":
-    mr_meeseeks.start(port=5002)
+    mr_meeseeks.start(port=52257)

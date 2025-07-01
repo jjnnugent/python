@@ -95,4 +95,4 @@ def command_watch(ack, command, respond) -> None:
 
 
 if __name__ == "__main__":
-    the_watcher.start(port=5000)
+    the_watcher.start(port=52258)

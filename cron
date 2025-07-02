@@ -1,5 +1,6 @@
 # crontab.guru
 
+*/5 * * * *     ~/duckdns/duck.sh >/dev/null 2>&1
 */20 * * * *    git -C ~/python/ fetch && git -C ~/python/ reset --hard origin/main && uv run --directory ~/python/slack/watcher/watchlist/ ~/python/slack/watcher/watchlist/main.py
 
 30 7 * * 3      git -C ~/python/ fetch && git -C ~/python/ reset --hard origin/main && uv run --directory ~/python/crawl/ ~/python/crawl/mark.py

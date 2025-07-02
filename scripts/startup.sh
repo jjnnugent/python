@@ -13,3 +13,4 @@ tmux select-pane -T watcher -t logs.1
 tmux select-pane -T mrmeeseeks -t logs.2
 tmux select-pane -T watchlist -t logs.3
 tmux select-layout -t logs even-vertical
+tmux new-window -n misc

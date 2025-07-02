@@ -10,7 +10,7 @@ from selectolax.parser import HTMLParser
 
 load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
-logger = logging.getLogger("thw---")
+logger = logging.getLogger("gl-thw")
 
 
 def load_data() -> None:

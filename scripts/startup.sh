@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-tmux new-session -ds logs
+tmux new-session -ds logs | bash
 tmux split-window -t logs
 tmux split-window -t logs
 tmux split-window -t logs

@@ -11,5 +11,6 @@
 28 9 * * *      git -C ~/python/ fetch && git -C ~/python/ reset --hard origin/main && uv run --directory ~/python/crawl/ ~/python/crawl/bgl.py
 29 9 * * 2      git -C ~/python/ fetch && git -C ~/python/ reset --hard origin/main && uv run --directory ~/python/slack/meeseeks/ ~/python/slack/meeseeks/tools/gld.py
 30 9 * * 2      git -C ~/python/ fetch && git -C ~/python/ reset --hard origin/main && uv run --directory ~/python/slack/meeseeks/ ~/python/slack/meeseeks/tools/gld_csv.py
+0 5 * * *       tmux kill-server && git -C ~/python/ fetch && git -C ~/python/ reset --hard origin/main && /home/ubuntu/python/scripts/startup.sh
 
-@reboot sleep 30 && /HOMEDIR/scripts/startup.sh
+@reboot sleep 15 && /home/ubuntu/python/scripts/startup.sh

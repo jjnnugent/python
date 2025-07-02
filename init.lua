@@ -19,7 +19,7 @@ vim.g.loaded_perl_provider = 0
 vim.g.loaded_ruby_provider = 0
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
-vim.g.python3_host_prog = "/usr/local/bin/python3"
+vim.g.python3_host_prog = "/usr/bin/python3"
 
 vim.opt.backup = false
 vim.opt.expandtab = true

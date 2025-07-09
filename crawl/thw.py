@@ -30,7 +30,7 @@ def main() -> None:
         tree = HTMLParser(html=response.text)
         nodes = tree.css("div.hawk-deal-widget-container")
 
-        pattern_cpu = re.compile(r"((?:Core|Ryzen|Ultra)?\s*i?[3579][-\s]\d{3,}[a-zA-Z]+)")
+        pattern_cpu = re.compile(r"((?:Core (?:Ultra)?|Ryzen)\s*i?[3579](?:\s*|-)\d{3,}[a-zA-Z]+)")
         pattern_gpu = re.compile(r"(RTX\s*\d{4}(?:\s*Ti)?)")
         pattern_mem = re.compile(r"(\d+GB)\s*of\s*(?:(?:LP)?DDR|RAM|\d+MHz)")
         pattern_price = re.compile(r"(?<=now)\s*\$((?:\d+,)?\d+)")
@@ -43,11 +43,17 @@ def main() -> None:
             temp['brand'] = node.css_first("img").attrs['alt']
             temp['link'] = node.css_first("a.hawk-affiliate-link-deal-button").attrs['href']
             temp['cpu'] = extract_text(text=html, pattern=pattern_cpu)
+            if temp['cpu'] is None:
+                continue
             temp['gpu'] = extract_text(text=html, pattern=pattern_gpu)
+            if temp['gpu'] is None:
+                continue
             temp['mem'] = extract_text(text=html, pattern=pattern_mem)
             temp['price'] = extract_text(text=html, pattern=pattern_price)
             if temp['price'] is not None:
                 temp['price'] = temp['price'].replace(",", "")
+            else:
+                continue
             temp['ssd'] = extract_text(text=html, pattern=pattern_ssd)
             data.append(temp)
         save_file(data)

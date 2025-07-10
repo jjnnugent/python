@@ -52,7 +52,13 @@ def main() -> None:
                 continue
             temp["link"] = node.css_first("p > a").attrs["href"]
             temp["brand"] = re.sub(
-                pattern=r"\s*(?:Price|watch:|\\(?:u2796|ud83d|udd3d)|NEW|DEAL|!)",
+                pattern=r"\s*(?:Price|watch:|NEW|DEAL|!)",
+                repl="",
+                string=temp["brand"],
+                flags=re.I,
+            )
+            temp["brand"] = re.sub(
+                pattern=r"\s*\\(?:2796|ud83d|udd3d)",
                 repl="",
                 string=temp["brand"],
                 flags=re.I,

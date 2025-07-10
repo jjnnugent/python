@@ -12,10 +12,14 @@ load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger(name="gl-pcg")
 
+
 def save_file(data) -> None:
-    with open(file=os.path.expanduser("~/data/pcg.json"), mode="w", encoding="utf-8") as file:
+    with open(
+        file=os.path.expanduser("~/data/pcg.json"), mode="w", encoding="utf-8"
+    ) as file:
         json.dump(obj=data, fp=file, indent=2)
     logger.info("pcg.json saved")
+
 
 def main() -> None:
     address = os.getenv("URL_PCG")
@@ -25,7 +29,7 @@ def main() -> None:
         nodes = tree.css("div.hawk-deal-widget-container")
 
         data = []
-        names = ['brand', 'gpu', 'cpu', 'inch', 'res', 'hz', 'mem', 'ssd', 'price']
+        names = ["brand", "gpu", "cpu", "inch", "res", "hz", "mem", "ssd", "price"]
         for node in nodes:
             parts = node.css_first("p > strong").text().split("|")
             if len(parts) != 9:
@@ -35,12 +39,24 @@ def main() -> None:
                 temp[key] = value.strip()
             if temp.get("gpu") is None or temp.get("cpu") is None:
                 continue
-            price = node.css_first("p > a > strong").text().replace("\u00a3", "").strip()
-            price = re.search(pattern=r"((?:\d+,)?\d+(?:\.\d+)?)", string=price, flags=re.I).group(1).replace(",", "")
-            temp['price'] = price
+            price = (
+                node.css_first("p > a > strong").text().replace("\u00a3", "").strip()
+            )
+            price = (
+                re.search(pattern=r"((?:\d+,)?\d+(?:\.\d+)?)", string=price, flags=re.I)
+                .group(1)
+                .replace(",", "")
+            )
+            temp["price"] = price
             if temp.get("price") is None:
                 continue
-            temp['link'] = node.css_first("p > a").attrs['href']
+            temp["link"] = node.css_first("p > a").attrs["href"]
+            temp["brand"] = re.sub(
+                pattern=r"\s*(?:Price|watch:|\\(?:u2796|ud83d|udd3d)|NEW|DEAL|!)",
+                repl="",
+                string=temp["brand"],
+                flags=re.I,
+            )
             data.append(temp)
         if data:
             save_file(data)
@@ -48,6 +64,7 @@ def main() -> None:
             logger.warning("data not found")
     else:
         logger.warning("returned with %s", response.status_code)
+
 
 if __name__ == "__main__":
     main()

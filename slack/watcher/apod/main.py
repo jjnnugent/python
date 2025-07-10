@@ -1,23 +1,21 @@
 import logging
 from logging.config import fileConfig
-
-from selectolax.parser import HTMLParser
-from urllib.parse import urljoin
-from dotenv import load_dotenv
-from curl_cffi import requests
 import os
 import re
+from urllib.parse import urljoin
 
-from slack_sdk import WebClient
+from curl_cffi import requests
+from dotenv import load_dotenv
+from selectolax.parser import HTMLParser
 from slack_sdk.errors import SlackApiError
-
-load_dotenv(dotenv_path=os.path.expanduser("~/python/.env"))
+from slack_sdk import WebClient
 
 slagger = logging.getLogger(name="slack_sdk.web.base_client")
 slagger.disabled = 1
 
+load_dotenv(dotenv_path=os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
-logger = logging.getLogger(name="apoday")
+logger = logging.getLogger(name="apod--")
 
 ADDRESS = "https://apod.nasa.gov/apod/astropix.html"
 
@@ -61,14 +59,13 @@ def slack_message(
             blocks=block,
             text=message,
         )
+        logger.info("slack message sent")
     except SlackApiError as error:
         logger.error("%s", error)
 
 
 if __name__ == "__main__":
-    logger.info("now running...")
     response = requests.get(url=ADDRESS, allow_redirects=True)
-    logger.info("returned status code %s", response.status_code)
     if response.status_code == 200:
         tree = HTMLParser(html=response.content)
         title = tree.css_first("b").text().strip()
@@ -116,7 +113,7 @@ if __name__ == "__main__":
                 block=None,
                 message="No APOD found because Mika is a stinky poopoo head.\nClick the link yourself you lazy sacks of crap:\nhttps://apod.nasa.gov/apod/",
             )
-
-    if temp:
-        logger.info(temp)
-    logger.info("completed")
+        if temp:
+            logger.info(temp)
+    else:
+        logger.warning("returned status code %s", response.status_code)

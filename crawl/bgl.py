@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 from logging.config import fileConfig
 import logging
 import json
@@ -6,12 +5,14 @@ import os
 import re
 
 from curl_cffi import requests
+from dotenv import load_dotenv
 
 load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger("gl-bgl")
 
-def load_data() -> None:
+
+def main() -> None:
     address = os.getenv("URL_BGL")
     response = requests.get(url=address, impersonate="chrome")
     if response.status_code == 200:
@@ -35,10 +36,6 @@ def save_data(data) -> None:
     ) as file:
         json.dump(obj=data, fp=file, indent=2)
     logger.info("bgl.json saved")
-
-
-def main() -> None:
-    load_data()
 
 
 if __name__ == "__main__":

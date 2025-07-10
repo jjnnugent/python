@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 from logging.config import fileConfig
 import logging
 import json
@@ -6,6 +5,7 @@ import os
 import re
 
 from curl_cffi import requests
+from dotenv import load_dotenv
 
 load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))

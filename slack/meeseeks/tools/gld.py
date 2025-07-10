@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
-import pandas as pd
 import json
 import os
+import pandas as pd
 import re
 
 load_dotenv(os.path.expanduser("~/python/.env"))

@@ -1,22 +1,22 @@
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
-from dotenv import load_dotenv
-from curl_cffi import requests
 from datetime import datetime
-from time import sleep
+from logging.config import fileConfig
+import logging
 import json
 import os
 import re
+from time import sleep
 
-import logging
-from logging.config import fileConfig
+from curl_cffi import requests
+from dotenv import load_dotenv
+from slack_sdk.errors import SlackApiError
+from slack_sdk import WebClient
 
 slagger = logging.getLogger(name="slack_sdk.web.base_client")
 slagger.disabled = 1
 
+load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger("wlist-")
-load_dotenv(os.path.expanduser("~/python/.env"))
 
 RE_VIDEOS = re.compile(
     pattern=r"(?:reelWatchEndpoint|(?:playlist)?[vV]ideoRenderer)\":\{\"videoId\":\"([^\"]+)\""
@@ -35,6 +35,7 @@ def save_data(data: dict) -> None:
         file=os.path.expanduser("~/data/watchlist.json"), mode="w", encoding="utf-8"
     ) as file:
         json.dump(obj=data, fp=file, indent=2)
+    logger.info("watchlist.json saved")
 
 
 def load_videos(name: str, channel_type: str) -> list:
@@ -67,7 +68,7 @@ def slack_message(channel_id: str, block: list | None, message: str | None) -> b
         return True
     except SlackApiError as error:
         logger.error(error)
-        return False
+    return False
 
 
 if __name__ == "__main__":
@@ -137,8 +138,6 @@ if __name__ == "__main__":
                 logger.debug("%s not day of %s", title, channel_days)
 
     if modified:
-        logger.info("overwriting data...")
         save_data(data)
-        logger.info("data saved")
     else:
         logger.debug("no updates")

@@ -237,14 +237,27 @@ def gld(text="", csv=False) -> None | str:
         src.append("THW")
         brand.append(item.get("brand"))
         price.append(float(item.get("price")))
-        if item.get("cpu") is not None and item.get("cpu").endswith("12500H"):
-            cpu.append(item.get("cpu").replace("7", "5"))
+        cpu_name = item.get("cpu")
+        if cpu_name is not None:
+            if cpu_name.startswith("Core"):
+                cpu_name = "Intel " + cpu_name
+            if cpu_name.startswith("Ryzen"):
+                cpu_name = "AMD " + cpu_name
+            if cpu_name.endswith("12500H"):
+                cpu_name = cpu_name.replace("7", "5")
+            cpu.append(cpu_name)
         else:
-            cpu.append(item.get("cpu"))
-        gpu.append(item.get("gpu"))
-        mem.append(item.get("mem")
+            cpu.append(cpu_name)
+        gpu_name = item.get("gpu")
+        if gpu_name is not None:
+            if gpu_name.startswith("RTX"):
+                gpu_name = "GeForce " + gpu_name + " Laptop GPU"
+            gpu.append(gpu_name)
+        else:
+            gpu.append(gpu_name)
+        mem.append(item.get("mem"))
         screen.append(None)
-        ssd.append(item.get("ssd")
+        ssd.append(item.get("ssd"))
         link.append(item.get("link"))
 
     # print("thw")
@@ -280,9 +293,9 @@ def gld(text="", csv=False) -> None | str:
                     display = "NA"
                 screen.append(display)
             elif option == "Processor":
-                cpu.append(
-                    re.sub(pattern=r"®|™|\s*CPU", repl="", string=name, flags=re.I)
-                )
+                cpu_name = re.sub(pattern=r"®|™|D?\s*CPU", repl="", string=name, flags=re.I)
+                cpu_name = cpu_name.replace("Intel Core Ultra 7 250H", "Intel Core 7 250H")
+                cpu.append(cpu_name)
             elif option == "Memory":
                 mem.append(
                     re.sub(
@@ -337,6 +350,8 @@ def gld(text="", csv=False) -> None | str:
                 cpu_name = "Intel Core Ultra 9 275HX"
         elif cpu_name.startswith("Ryzen"):
             cpu_name = "AMD " + cpu_name
+            if cpu_name.endswith("9 HX 365"):
+                cpu_name = "AMD Ryzen AI 9 HX 375"
         cpu_name = re.sub(pattern=r"(i\d)\s", repl=r"\1-", string=cpu_name, flags=re.I)
         cpu.append(cpu_name)
         mem.append(

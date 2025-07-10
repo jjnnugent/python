@@ -336,9 +336,7 @@ def gld(text="", csv=False) -> None | str:
 
     for item in pcg:
         src.append("PCG")
-        brand.append(
-            re.sub(pattern=r"^.*br>", repl="", string=item.get("brand"), flags=re.I)
-        )
+        brand.append(item.get("brand"))
         gpu_name = item.get("gpu")
         if gpu_name.startswith("RTX"):
             gpu_name = "GeForce " + gpu_name + " Laptop GPU"
@@ -372,20 +370,8 @@ def gld(text="", csv=False) -> None | str:
                 flags=re.I,
             )
         )
-        link.append(
-            re.search(pattern=r"href=\"([^\"]+)", string=item.get("price")).group(1)
-        )
-        price.append(
-            float(
-                re.search(
-                    pattern=r"strong>\s*\$((?:\d+,)?(?:\d+)(?:\.\d+)?)",
-                    string=item.get("price"),
-                    flags=re.I,
-                )
-                .group(1)
-                .replace(",", "")
-            )
-        )
+        link.append(item.get("link"))
+        price.append(float(item.get("price")))
 
     # print("pcg")
     # print(len(src))

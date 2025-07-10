@@ -236,15 +236,15 @@ def gld(text="", csv=False) -> None | str:
     for item in thw:
         src.append("THW")
         brand.append(item.get("brand"))
-        price.append(float(item.get("cost")))
+        price.append(float(item.get("price")))
         if item.get("cpu") is not None and item.get("cpu").endswith("12500H"):
             cpu.append(item.get("cpu").replace("7", "5"))
         else:
             cpu.append(item.get("cpu"))
         gpu.append(item.get("gpu"))
-        mem.append(None)
+        mem.append(item.get("mem")
         screen.append(None)
-        ssd.append(None)
+        ssd.append(item.get("ssd")
         link.append(item.get("link"))
 
     # print("thw")

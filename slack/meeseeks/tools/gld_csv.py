@@ -1,19 +1,19 @@
-from slack_sdk.errors import SlackApiError
-from slack_sdk import WebClient
-from dotenv import load_dotenv
 from datetime import datetime
+from logging.config import fileConfig
+import logging
 import os
 
-import logging
-from logging.config import fileConfig
+from dotenv import load_dotenv
+from slack_sdk.errors import SlackApiError
+from slack_sdk import WebClient
 
 slagger = logging.getLogger(name="slack_sdk.web.base_client")
 slagger.disabled = 1
 
+load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger(name="gl-tue")
 
-load_dotenv(os.path.expanduser("~/python/.env"))
 client = WebClient(token=os.getenv("WATCHER_TOKEN"))
 
 

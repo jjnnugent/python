@@ -1,13 +1,12 @@
 import logging
-logging.basicConfig(level=logging.DEBUG)
-
-from tools import *
 import os
 
-from slack_bolt import App
 from dotenv import load_dotenv
+from slack_bolt import App
+from tools import *
 
 load_dotenv(os.path.expanduser("~/python/.env"))
+logging.basicConfig(level=logging.DEBUG)
 
 mr_meeseeks = App(
     signing_secret=os.getenv("MEESEEKS_SS"), token=os.getenv("MEESEEKS_TOKEN")

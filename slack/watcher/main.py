@@ -1,12 +1,13 @@
-from slack_bolt import App
-from dotenv import load_dotenv
-from curl_cffi import requests
 from datetime import datetime
+import logging
 import json
 import os
 import re
 
-import logging
+from curl_cffi import requests
+from dotenv import load_dotenv
+from slack_bolt import App
+
 logging.basicConfig(level=logging.DEBUG)
 
 RE_CHANNEL = re.compile(

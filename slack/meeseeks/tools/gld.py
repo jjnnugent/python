@@ -293,8 +293,11 @@ def gld(text="", csv=False) -> None | str:
                     display = "NA"
                 screen.append(display)
             elif option == "Processor":
-                cpu_name = re.sub(pattern=r"®|™|D?\s*CPU", repl="", string=name, flags=re.I)
-                cpu_name = cpu_name.replace("Intel Core Ultra 7 250H", "Intel Core 7 250H")
+                cpu_name = re.sub(
+                    pattern=r"®|™|D?\s*CPU", repl="", string=name, flags=re.I
+                )
+                if cpu_name == "Intel Core Ultra 7 250H":
+                    cpu_name = "Intel Core 7 250H"
                 cpu.append(cpu_name)
             elif option == "Memory":
                 mem.append(
@@ -346,6 +349,8 @@ def gld(text="", csv=False) -> None | str:
             cpu_name = "Intel " + cpu_name
             if cpu_name == "Intel Core Ultra 9 275 HX":
                 cpu_name = "Intel Core Ultra 9 275HX"
+        if cpu_name == "Intel Core Ultra 7 240H":
+            cpu_name = "Intel Core 7 240H"
         elif cpu_name.startswith("Ryzen"):
             cpu_name = "AMD " + cpu_name
             if cpu_name.endswith("9 HX 365"):

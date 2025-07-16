@@ -26,7 +26,7 @@ def slack_message() -> None:
             file=os.path.expanduser("~/data/gld.csv"),
             title=fname,
             channel=os.getenv("COOL_CHANNEL"),
-            initial_comment="Gaming Laptop Deals"
+            initial_comment="Gaming Laptop Deals",
         )
         logger.info("slack message sent")
     except SlackApiError as error:

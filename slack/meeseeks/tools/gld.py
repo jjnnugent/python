@@ -160,11 +160,14 @@ def gld(text="", csv=False) -> None | str:
         src.append("GLD")
         link.append(item["value"].get("deal_url"))
         brand.append(item["value"].get("laptop_name"))
-        cpu.append(item["value"].get("cpu"))
-        if item["value"].get("gpu") == "NVIDIA RTX 2050":
+        cpu_name = item["value"].get("cpu")
+        gpu_name = item["value"].get("gpu")
+        cpu_name = cpu_name.replace("I7", "i7")
+        cpu.append(cpu_name)
+        if gpu_name == "NVIDIA RTX 2050":
             gpu.append("GeForce RTX 2050")
         else:
-            gpu.append(item["value"].get("gpu"))
+            gpu.append(gpu_name)
         mem.append(item["value"].get("memory"))
         screen.append(item["value"].get("screen"))
         ssd.append(item["value"].get("storage"))
@@ -186,6 +189,10 @@ def gld(text="", csv=False) -> None | str:
         brand.append(item.get("productTitle"))
         link.append(item.get("activeAffiliateLink"))
         price.append(float(item["locationPricing"][0].get("currentPrice")))
+        hz = "NA"
+        mem_amount = "NA"
+        mem_speed = "NA"
+        res = "NA"
         for prop in item["properties"]:
             if prop.get("propertyTitle") == "Storage":
                 ssd.append(prop.get("value"))
@@ -193,11 +200,42 @@ def gld(text="", csv=False) -> None | str:
                 hz = prop.get("value")
             if prop.get("propertyTitle") == "Display Resolution":
                 res = prop.get("value")
+            #                     -8000 MHz
+            # 16 GB
+            # -6400 MHZ
+            # 32 GB
+            # -5600 MHZ
+            # 32 GB
+            # -5600 MHZ
+            # 32 GB
+            # -7467 MHZ
+            # 16 GB
+            # -5600 MHZ
+            # 32 GB
+            # -7467 MHZ
+            # 32 GB
+            # -5600MHZ
+            # -6400 MHZ
+            # 32 GB
+            # 32 GB
+            # -6400 MT/S
+            # 32 GB
+            # -6400 MT/S
+            # 32 GB
+            # -6400 MT/S
+            # 32 GB
+            # -6400 MHZ
             if prop.get("propertyTitle") == "Memory Amount":
-                mem_amount = prop.get("value").strip()
+                mem_amount = re.sub(
+                    pattern=r"\s*GB", repl="", string=prop.get("value"), flags=re.I
+                )
             if prop.get("propertyTitle") == "Memory Speed":
-                mem_speed = "-" + prop.get("value").strip()
-
+                mem_speed = re.sub(
+                    pattern=r"\s*MHZ|\s*MT/S",
+                    repl="",
+                    string=prop.get("value"),
+                    flags=re.I,
+                )
             if prop.get("propertyTitle") == "Graphics Card":
                 gpu_name = prop.get("value").strip()
                 if gpu_name.startswith("RTX"):
@@ -219,8 +257,8 @@ def gld(text="", csv=False) -> None | str:
                     cpu.append("AMD " + cpu_name)
                 else:
                     cpu.append(cpu_name)
-            mem.append(mem_amount + mem_speed)
-            screen.append(f"{res} {hz}")
+        mem.append(f"{mem_amount}-{mem_speed}")
+        screen.append(f"{res} {hz}")
 
     # print("bgl")
     # print(len(src))
@@ -296,8 +334,6 @@ def gld(text="", csv=False) -> None | str:
                 cpu_name = re.sub(
                     pattern=r"®|™|D?\s*CPU", repl="", string=name, flags=re.I
                 )
-                if cpu_name == "Intel Core Ultra 7 250H":
-                    cpu_name = "Intel Core 7 250H"
                 cpu.append(cpu_name)
             elif option == "Memory":
                 mem.append(
@@ -347,10 +383,6 @@ def gld(text="", csv=False) -> None | str:
         cpu_name = item.get("cpu")
         if cpu_name.startswith("Core"):
             cpu_name = "Intel " + cpu_name
-            if cpu_name == "Intel Core Ultra 9 275 HX":
-                cpu_name = "Intel Core Ultra 9 275HX"
-        if cpu_name == "Intel Core Ultra 7 240H":
-            cpu_name = "Intel Core 7 240H"
         elif cpu_name.startswith("Ryzen"):
             cpu_name = "AMD " + cpu_name
             if cpu_name.endswith("9 HX 365"):
@@ -379,6 +411,15 @@ def gld(text="", csv=False) -> None | str:
         price.append(float(item.get("price")))
 
     # print("pcg")
+    # print(src)
+    # print(link)
+    # print(brand)
+    # print(cpu)
+    # print(gpu)
+    # print(mem)
+    # print(screen)
+    # print(ssd)
+    # print(price)
     # print(len(src))
     # print(len(link))
     # print(len(brand))
@@ -388,6 +429,7 @@ def gld(text="", csv=False) -> None | str:
     # print(len(screen))
     # print(len(ssd))
     # print(len(price))
+    # exit()
 
     gld_df = pd.DataFrame(
         {
@@ -403,8 +445,22 @@ def gld(text="", csv=False) -> None | str:
         }
     )
 
+    # Intel Core Ultra 7 240H
+    # Intel Core Ultra 7 250H
+    gld_df["cpu"] = gld_df["cpu"].str.replace(
+        pat=r"^Intel Core Ultra 7 (2[45]0)H$",
+        repl=r"Intel Core 7 \1H",
+        case=False,
+        regex=True,
+    )
+
+    # Intel Core Ultra 9 275HX
+    gld_df["cpu"] = gld_df["cpu"].str.replace(
+        pat=r"275\s*HX?$", repl="275HX", case=False, regex=True
+    )
+
+    # (?!2050)\d{4}
     gld_df["gpu"] = gld_df["gpu"].str.replace(
-        # (?!2050)\d{4}
         pat=r"^NVIDIA.*?((?!2050)\d{4}.*)$",
         repl=r"GeForce RTX \1 Laptop GPU",
         case=False,
@@ -434,7 +490,7 @@ def gld(text="", csv=False) -> None | str:
     )
     df["brand"] = df["brand"].str[:12]
     df["screen"] = df["screen"].str.replace(
-        pat=r"^.*(\d{4})p?\s*(\d{3})(?:HZ)?.*$", repl=r"\1 \2", case=False, regex=True
+        pat=r"^.*(\d{4})p?\s*(\d{3})(?:NA|HZ)?.*$", repl=r"\1 \2", case=False, regex=True
     )
     df["ram"] = df["ram"].str.replace(
         pat=r"(?:\s*GB\s*|(?:LP)?DDR5|\s*RAM|\s*M[HT]/?[SZ])",

@@ -219,9 +219,9 @@ def gld(text="", csv=False) -> None | str:
                     cpu.append("AMD " + cpu_name)
                 else:
                     cpu.append(cpu_name)
-        if not mem_amount:
+        if mem_amount is None:
             mem_amount = "NA"
-        if not mem_speed:
+        if mem_speed is None:
             mem_speed = "NA"
         mem.append(mem_amount + mem_speed)
         screen.append(f"{res} {hz}")

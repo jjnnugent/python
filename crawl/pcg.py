@@ -31,7 +31,7 @@ def main() -> None:
         data = []
         names = ["brand", "gpu", "cpu", "inch", "res", "hz", "mem", "ssd", "price"]
         for node in nodes:
-            parts = node.css_first("p > strong").text().split("|")
+            parts = node.css_first("p > strong:nth-child(3)").text().split("|")
             if len(parts) != 9:
                 continue
             temp = {}

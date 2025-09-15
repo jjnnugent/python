@@ -7,10 +7,11 @@ import re
 from curl_cffi import requests
 from dotenv import load_dotenv
 from selectolax.parser import HTMLParser
+from slack_sdk import WebClient
 
-load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger(name="gl-pcg")
+load_dotenv(os.path.expanduser("~/python/.env"))
 
 
 def save_file(data) -> None:
@@ -21,49 +22,58 @@ def save_file(data) -> None:
     logger.info("pcg.json saved")
 
 
+def slack_message(message: str) -> None:
+    client = WebClient(token=os.getenv("WATCHER_TOKEN"))
+    client.chat_postMessage(channel=os.getenv("SANDBOX_CHANNEL"), text=message)
+
+
 def main() -> None:
     address = os.getenv("URL_PCG")
     response = requests.get(url=address, allow_redirects=True, impersonate="chrome")
+
     if response.status_code == 200:
-        tree = HTMLParser(html=response.text)
-        nodes = tree.css("div.hawk-deal-widget-container")
+        tree = HTMLParser(response.text)
+        nodes = tree.css("div.hawk-deal-widget-main")
 
         data = []
-        names = ["brand", "gpu", "cpu", "inch", "res", "hz", "mem", "ssd", "price"]
         for node in nodes:
-            parts = node.css_first("p > strong:nth-child(3)").text().split("|")
-            if len(parts) != 9:
+            link = node.css_first("a.hawk-affiliate-link-container").attrs["href"]
+            price = node.css_first("span.hawk-deal-widget-title-price").text()
+            price = re.sub(pattern=r"now(\s*)|\$|,", repl="", string=price, flags=re.I)
+
+            if price.startswith("£"):
                 continue
-            temp = {}
-            for key, value in zip(names, parts):
-                temp[key] = value.strip()
-            if temp.get("gpu") is None or temp.get("cpu") is None:
-                continue
-            price = (
-                node.css_first("p > a > strong").text().replace("\u00a3", "").strip()
-            )
-            price = (
-                re.search(pattern=r"((?:\d+,)?\d+(?:\.\d+)?)", string=price, flags=re.I)
-                .group(1)
-                .replace(",", "")
-            )
-            temp["price"] = price
-            if temp.get("price") is None:
-                continue
-            temp["link"] = node.css_first("p > a").attrs["href"]
-            temp["brand"] = re.sub(
-                pattern=r"\s*(?:Price|watch:|➖|🔽|🔼|NEW|DEAL|!)",
+
+            brand = node.css_first("span.hawk-deal-widget-title-product-title").text()
+            brand = re.sub(pattern=r"(\s*)\|.*$", repl="", string=brand, flags=re.I)
+            props = node.css_first("p > strong").text()
+            props = re.sub(
+                pattern=r"key\s*specs\:\s*|\s*hz|\-inch",
                 repl="",
-                string=temp["brand"],
+                string=props,
                 flags=re.I,
             )
+            props = re.sub(pattern=r"\s*\|\s*$", repl="", string=props, flags=re.I)
+            props = props.split(" | ", maxsplit=6)
+
+            if len(props) < 6:
+                continue
+
+            temp = {}
+            names = ["brand", "price", "link", "gpu", "cpu", "inch", "hz", "mem", "ssd"]
+            for key, value in zip(names, [brand, price, link] + props[:3] + props[-3:]):
+                temp[key] = value
             data.append(temp)
+
         if data:
             save_file(data)
         else:
-            logger.warning("data not found")
+            logger.warning("no data found")
+            slack_message(message="[WARNING] PCG no data found")
+
     else:
-        logger.warning("returned with %s", response.status_code)
+        logger.warning("response returned %s", response.status_code)
+        slack_message(message=f"[WARNING] PCG returned {response.status_code}")
 
 
 if __name__ == "__main__":

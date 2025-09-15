@@ -200,31 +200,6 @@ def gld(text="", csv=False) -> None | str:
                 hz = prop.get("value")
             if prop.get("propertyTitle") == "Display Resolution":
                 res = prop.get("value")
-            #                     -8000 MHz
-            # 16 GB
-            # -6400 MHZ
-            # 32 GB
-            # -5600 MHZ
-            # 32 GB
-            # -5600 MHZ
-            # 32 GB
-            # -7467 MHZ
-            # 16 GB
-            # -5600 MHZ
-            # 32 GB
-            # -7467 MHZ
-            # 32 GB
-            # -5600MHZ
-            # -6400 MHZ
-            # 32 GB
-            # 32 GB
-            # -6400 MT/S
-            # 32 GB
-            # -6400 MT/S
-            # 32 GB
-            # -6400 MT/S
-            # 32 GB
-            # -6400 MHZ
             if prop.get("propertyTitle") == "Memory Amount":
                 mem_amount = re.sub(
                     pattern=r"\s*GB", repl="", string=prop.get("value"), flags=re.I
@@ -334,6 +309,7 @@ def gld(text="", csv=False) -> None | str:
                 cpu_name = re.sub(
                     pattern=r"®|™|D?\s*CPU", repl="", string=name, flags=re.I
                 )
+                cpu_name = cpu_name.replace("i5-13650HX", "i7-13650HX")
                 cpu.append(cpu_name)
             elif option == "Memory":
                 mem.append(
@@ -392,13 +368,11 @@ def gld(text="", csv=False) -> None | str:
         mem.append(
             re.sub(pattern=r"^(\d+).*$", repl=r"\1", string=item.get("mem"), flags=re.I)
         )
-        res = re.search(
-            pattern=r"(\d{4})", string=item.get("res") + item.get("hz")
-        ).group(1)
+        res = ""
         hz = re.search(
-            pattern=r"(\d{3})", string=item.get("res") + item.get("hz")
+            pattern=r"(\d{3})", string=item.get("hz")
         ).group(1)
-        screen.append(res + " " + hz)
+        screen.append(res + hz)
         ssd.append(
             re.sub(
                 pattern=r"^(\d+[GT]B).*$",

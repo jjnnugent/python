@@ -173,69 +173,78 @@ def gld(text="", csv=False) -> None | str:
         ssd.append(item["value"].get("storage"))
         price.append(float(item["value"].get("sale_price")))
 
-    # print("gld")
-    # print(len(src))
-    # print(len(link))
-    # print(len(brand))
-    # print(len(cpu))
-    # print(len(gpu))
-    # print(len(mem))
-    # print(len(screen))
-    # print(len(ssd))
-    # print(len(price))
+    print("gld")
+    print(len(src))
+    print(len(link))
+    print(len(brand))
+    print(len(cpu))
+    print(len(gpu))
+    print(len(mem))
+    print(len(screen))
+    print(len(ssd))
+    print(len(price))
 
-    for item in bgl["configs"]:
-        src.append("BGL")
-        brand.append(item.get("productTitle"))
-        link.append(item.get("activeAffiliateLink"))
-        price.append(float(item["locationPricing"][0].get("currentPrice")))
-        hz = "NA"
-        mem_amount = "NA"
-        mem_speed = "NA"
-        res = "NA"
-        for prop in item["properties"]:
-            if prop.get("propertyTitle") == "Storage":
-                ssd.append(prop.get("value"))
-            if prop.get("propertyTitle") == "Display Refresh Rate (Hz)":
-                hz = prop.get("value")
-            if prop.get("propertyTitle") == "Display Resolution":
-                res = prop.get("value")
-            if prop.get("propertyTitle") == "Memory Amount":
-                mem_amount = re.sub(
-                    pattern=r"\s*GB", repl="", string=prop.get("value"), flags=re.I
-                )
-            if prop.get("propertyTitle") == "Memory Speed":
-                mem_speed = re.sub(
-                    pattern=r"\s*MHZ|\s*MT/S",
-                    repl="",
-                    string=prop.get("value"),
-                    flags=re.I,
-                )
-            if prop.get("propertyTitle") == "Graphics Card":
-                gpu_name = prop.get("value").strip()
-                if gpu_name.startswith("RTX"):
-                    gpu.append("NVIDIA " + gpu_name)
-                else:
-                    gpu.append(gpu_name)
-
-            if prop.get("propertyTitle") == "Processor":
-                cpu_name = prop.get("value").strip()
-                if cpu_name.startswith("Core"):
-                    if "I" in cpu_name:
-                        cpu_name = cpu_name.replace("I", "i")
-                    cpu.append("Intel " + cpu_name)
-                elif cpu_name.startswith("Ryzen"):
-                    if "MAX" in cpu_name:
-                        cpu_name = cpu_name.replace("MAX", "Max")
-                    if cpu_name.endswith("HX 370"):
-                        cpu_name = "Ryzen AI 9 HX 370"
-                    cpu.append("AMD " + cpu_name)
-                else:
-                    cpu.append(cpu_name)
-        mem.append(f"{mem_amount}-{mem_speed}")
-        screen.append(f"{res} {hz}")
-
+    # for item in bgl["configs"]:
+    #     src.append("BGL")
+    #     brand.append(item.get("productTitle"))
+    #     link.append(item.get("activeAffiliateLink"))
+    #     price.append(float(item.get("currentPrice")))
+    #     hz = "NA"
+    #     mem_amount = "NA"
+    #     mem_speed = "NA"
+    #     res = "NA"
+    #     for prop in item["properties"]:
+    #         if prop.get("propertyTitle") == "Storage":
+    #             ssd.append(prop.get("value"))
+    #         if prop.get("propertyTitle") == "Display Refresh Rate (Hz)":
+    #             hz = prop.get("value")
+    #         if prop.get("propertyTitle") == "Display Resolution":
+    #             res = prop.get("value")
+    #         if prop.get("propertyTitle") == "Memory Amount":
+    #             mem_amount = re.sub(
+    #                 pattern=r"\s*GB", repl="", string=prop.get("value"), flags=re.I
+    #             )
+    #         if prop.get("propertyTitle") == "Memory Speed":
+    #             mem_speed = re.sub(
+    #                 pattern=r"\s*MHZ|\s*MT/S",
+    #                 repl="",
+    #                 string=prop.get("value"),
+    #                 flags=re.I,
+    #             )
+    #         if prop.get("propertyTitle") == "Graphics Card":
+    #             gpu_name = prop.get("value").strip()
+    #             if gpu_name.startswith("RTX"):
+    #                 gpu.append("NVIDIA " + gpu_name)
+    #             else:
+    #                 gpu.append(gpu_name)
+    #
+    #         if prop.get("propertyTitle") == "Processor":
+    #             cpu_name = prop.get("value").strip()
+    #             if cpu_name.startswith("Core"):
+    #                 if "I" in cpu_name:
+    #                     cpu_name = cpu_name.replace("I", "i")
+    #                 cpu.append("Intel " + cpu_name)
+    #             elif cpu_name.startswith("Ryzen"):
+    #                 if "MAX" in cpu_name:
+    #                     cpu_name = cpu_name.replace("MAX", "Max")
+    #                 if cpu_name.endswith("HX 370"):
+    #                     cpu_name = "Ryzen AI 9 HX 370"
+    #                 cpu.append("AMD " + cpu_name)
+    #             else:
+    #                 cpu.append(cpu_name)
+    #     mem.append(f"{mem_amount}-{mem_speed}")
+    #     screen.append(f"{res} {hz}")
+    #
     # print("bgl")
+    # print(src)
+    # print(link)
+    # print(brand)
+    # print(cpu)
+    # print(gpu)
+    # print(mem)
+    # print(screen)
+    # print(ssd)
+    # print(price)
     # print(len(src))
     # print(len(link))
     # print(len(brand))
@@ -245,6 +254,7 @@ def gld(text="", csv=False) -> None | str:
     # print(len(screen))
     # print(len(ssd))
     # print(len(price))
+    # exit()
 
     for item in thw:
         src.append("THW")
@@ -273,16 +283,16 @@ def gld(text="", csv=False) -> None | str:
         ssd.append(item.get("ssd"))
         link.append(item.get("link"))
 
-    # print("thw")
-    # print(len(src))
-    # print(len(link))
-    # print(len(brand))
-    # print(len(cpu))
-    # print(len(gpu))
-    # print(len(mem))
-    # print(len(screen))
-    # print(len(ssd))
-    # print(len(price))
+    print("thw")
+    print(len(src))
+    print(len(link))
+    print(len(brand))
+    print(len(cpu))
+    print(len(gpu))
+    print(len(mem))
+    print(len(screen))
+    print(len(ssd))
+    print(len(price))
 
     for item in ibp:
         src.append("IBP")
@@ -338,16 +348,16 @@ def gld(text="", csv=False) -> None | str:
             else:
                 continue
 
-    # print("ibp")
-    # print(len(src))
-    # print(len(link))
-    # print(len(brand))
-    # print(len(cpu))
-    # print(len(gpu))
-    # print(len(mem))
-    # print(len(screen))
-    # print(len(ssd))
-    # print(len(price))
+    print("ibp")
+    print(len(src))
+    print(len(link))
+    print(len(brand))
+    print(len(cpu))
+    print(len(gpu))
+    print(len(mem))
+    print(len(screen))
+    print(len(ssd))
+    print(len(price))
 
     for item in pcg:
         src.append("PCG")

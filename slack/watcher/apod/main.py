@@ -19,7 +19,7 @@ logger = logging.getLogger(name="apod--")
 
 # ADDRESS = "https://apod.nasa.gov/apod/astropix.html"
 # temporary solution during NASA haitus due to potential goverment shutdown
-ADDRESS = "http://www.star.ucl.ac.uk/~apod/apod/ap251003.html"
+ADDRESS = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/apod.html"
 
 
 def clean_explanation(text: str) -> str:

@@ -17,7 +17,9 @@ load_dotenv(dotenv_path=os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger(name="apod--")
 
-ADDRESS = "https://apod.nasa.gov/apod/astropix.html"
+# ADDRESS = "https://apod.nasa.gov/apod/astropix.html"
+# temporary solution during NASA haitus due to potential goverment shutdown
+ADDRESS = "http://www.star.ucl.ac.uk/~apod/apod/ap251003.html"
 
 
 def clean_explanation(text: str) -> str:

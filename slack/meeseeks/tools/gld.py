@@ -21,10 +21,10 @@ def gld(text="", csv=False) -> None | str:
     ) as file:
         gld = json.load(fp=file)
 
-    with open(
-        file=os.path.expanduser("~/data/bgl.json"), mode="r", encoding="utf-8"
-    ) as file:
-        bgl = json.load(fp=file)
+    # with open(
+    #     file=os.path.expanduser("~/data/bgl.json"), mode="r", encoding="utf-8"
+    # ) as file:
+    #     bgl = json.load(fp=file)
 
     with open(
         file=os.path.expanduser("~/data/thw.json"), mode="r", encoding="utf-8"

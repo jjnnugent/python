@@ -1,4 +1,4 @@
-from loggin.config import fileConfig
+from logging.config import fileConfig
 import logging
 import os
 

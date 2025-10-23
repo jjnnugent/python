@@ -20,7 +20,7 @@ def slack_message() -> None:
         "You wouldn't like me when I'm angry.",
         "Did you bring me meat?",
         "I require sustenance peasants. See to it at once!",
-        "You feed me or I feed on you.. you're choice.",
+        "You feed me or I feed on you.. your choice.",
         "MMMEEEOOOOOOOOOWW!!",
         "I gets then I sits.",
         "First, you feed me. Second, you feed me again. Capeesh?",

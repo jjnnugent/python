@@ -1,10 +1,14 @@
 [project]
-name = "slack"
+name = "python"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "curl-cffi>=0.13.0",
     "dotenv>=0.9.9",
+    "pandas>=2.3.3",
+    "selectolax>=0.4.0",
+    "slack-bolt>=1.26.0",
     "slack-sdk>=3.37.0",
 ]

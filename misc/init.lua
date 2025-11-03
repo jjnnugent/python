@@ -145,8 +145,9 @@ require("lazy").setup({
             dependencies = { "saghen/blink.cmp" },
             config = function()
                 local capabilities = require("blink.cmp").get_lsp_capabilities()
-                local lspconfig = require("lspconfig")
-                lspconfig['pylsp'].setup({
+                -- local lspconfig = require("lspconfig")
+                -- lspconfig['pylsp'].setup({
+                vim.lsp.config({"pylsp", {
                     capabilities = capabilities,
                     settings = {
                         pylsp = {
@@ -163,7 +164,8 @@ require("lazy").setup({
                         }
                     }
                 })
-                lspconfig['lua_ls'].setup({
+                -- lspconfig['lua_ls'].setup({
+                vim.lsp.config({"lua_ls", {
                     capabilities = capabilities,
                     settings = {
                         Lua = {
@@ -173,7 +175,10 @@ require("lazy").setup({
                         }
                     }
                 })
-                lspconfig['ruff'].setup({ capabilities = capabilities })
+                -- lspconfig['ruff'].setup({
+                vim.lsp.config({"ruff", {
+                    capabilities = capabilities
+                })
             end,
         },
     },

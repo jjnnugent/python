@@ -1,0 +1,19 @@
+# crontab.guru
+
+*/5 * * * *     ~/duckdns/duck.sh >/dev/null 2>&1
+*/20 * * * *    git -C ~/python/ fetch && git -C ~/python/ reset --hard origin/main && uv run --directory ~/python/ watchlist.py
+
+5 5 * * *       tmux kill-server && sleep 1 && ~/python/misc/startup
+30 7 * * 2      uv run --directory ~/python/crawl/ mark.py
+30 8 * * *      uv run --directory ~/python/ apod.py
+# 24 9 * * *      uv run --directory ~/python/crawl/ bgl.py
+25 9 * * *      uv run --directory ~/python/crawl/ gld.py
+26 9 * * *      uv run --directory ~/python/crawl/ ibp.py
+27 9 * * *      uv run --directory ~/python/crawl/ pcg.py
+28 9 * * *      uv run --directory ~/python/crawl/ thw.py
+29 9 * * 2      uv run --directory ~/python/ utils/gld.py
+30 9 * * 2      uv run --directory ~/python/ utils/gld_csv.py
+59 11,17,23 * * *      uv run --directory ~/python/ dozar.py
+
+@reboot sleep 15 && git -C ~/python/ fetch && git -C ~/python/ reset --hard origin/main && ~/python/scripts/startup
+

@@ -3,7 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from slack_bolt import App
-from tools import *
+from utils import *
 
 load_dotenv(os.path.expanduser("~/python/.env"))
 logging.basicConfig(level=logging.DEBUG)

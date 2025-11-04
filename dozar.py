@@ -8,7 +8,7 @@ from utils.slack import slack_message
 
 load_dotenv()
 BOT = os.getenv("DOZAR_TOKEN")
-CHANNEL = os.getenv("DOZAR_TEST")
+CHANNEL = os.getenv("DOZAR_CHANNEL")
 
 
 quotes = [
@@ -77,6 +77,7 @@ def main() -> None:
             epoch = slack_message(
                 timing=True,
                 passw=BOT,
+                icon_url="https://ik.imagekit.io/eetmbg795/doz1.png",
                 channel=CHANNEL,
                 text=choice(reminders),
             )

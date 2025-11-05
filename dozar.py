@@ -80,6 +80,7 @@ def main() -> None:
                 passw=BOT,
                 channel=CHANNEL,
                 icon_url="https://ik.imagekit.io/eetmbg795/doz1.png",
+                username="Doz (reminder"),
                 text=choice(reminders),
             )
 

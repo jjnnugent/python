@@ -1,41 +1,28 @@
 from datetime import datetime
 from logging.config import fileConfig
 import logging
-import json
 import os
 import re
 from time import sleep
 
 from curl_cffi import requests
 from dotenv import load_dotenv
-from slack_sdk.errors import SlackApiError
-from slack_sdk import WebClient
 
+from utils.file import load_json
+from utils.file import save_json
+from utils.slack import slack_message
+
+
+load_dotenv()
+fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 slagger = logging.getLogger(name="slack_sdk.web.base_client")
 slagger.disabled = 1
-
-load_dotenv(os.path.expanduser("~/python/.env"))
-fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger("wlist-")
+
 
 RE_VIDEOS = re.compile(
     pattern=r"(?:reelWatchEndpoint|(?:playlist)?[vV]ideoRenderer)\":\{\"videoId\":\"([^\"]+)\""
 )
-
-
-def load_data() -> dict:
-    with open(
-        file=os.path.expanduser("~/data/watchlist.json"), mode="r", encoding="utf-8"
-    ) as file:
-        return json.load(fp=file)
-
-
-def save_data(data: dict) -> None:
-    with open(
-        file=os.path.expanduser("~/data/watchlist.json"), mode="w", encoding="utf-8"
-    ) as file:
-        json.dump(obj=data, fp=file, indent=2)
-    logger.info("watchlist.json saved")
 
 
 def load_videos(name: str, channel_type: str) -> list:
@@ -59,27 +46,14 @@ def load_videos(name: str, channel_type: str) -> list:
         return []
 
 
-def slack_message(channel_id: str, block: list | None, message: str | None) -> bool:
-    client = WebClient(token=os.getenv("WATCHER_TOKEN"))
-    try:
-        client.chat_postMessage(
-            channel=channel_id, text=message, blocks=block, unfurl_media=True
-        )
-        return True
-    except SlackApiError as error:
-        logger.error(error)
-    return False
-
-
 if __name__ == "__main__":
     modified = False
     now = datetime.now()
-    day = (
-        now.isoweekday()
-    )  # 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat, 7 = Sun
+    day = now.isoweekday()
+    # 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat, 7 = Sun
     hour = now.hour
 
-    data = load_data()
+    data = load_json(os.path.expanduser("~/data/watchlist.json"))
     for format, entry in data.items():
         for channel in entry:
             channel_days = data[format][channel].get("days_of_week")
@@ -122,9 +96,11 @@ if __name__ == "__main__":
 
                         logger.info("%s new video %s", title, new)
                         sent = slack_message(
-                            channel_id=slack_channel,
-                            block=slack_block,
-                            message=f"{title} new video!",
+                            timing=True,
+                            passw=os.getenv("WATCHER_TOKEN"),
+                            channel=slack_channel,
+                            blocks=slack_block,
+                            text=f"{title} new video!",
                         )
 
                         if sent:
@@ -138,6 +114,6 @@ if __name__ == "__main__":
                 logger.debug("%s not day of %s", title, channel_days)
 
     if modified:
-        save_data(data)
+        save_json(data, os.path.expanduser("~/data/watchlist.json"))
     else:
         logger.debug("no updates")

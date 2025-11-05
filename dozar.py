@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 from utils.slack import slack_message
 
+
 load_dotenv()
 BOT = os.getenv("DOZAR_TOKEN")
 CHANNEL = os.getenv("DOZAR_CHANNEL")
@@ -79,6 +80,8 @@ def main() -> None:
                 passw=BOT,
                 icon_url="https://ik.imagekit.io/eetmbg795/doz1.png",
                 channel=CHANNEL,
+                icon_url="https://ik.imagekit.io/eetmbg795/doz1.png",
+                username="Doz (reminder"),
                 text=choice(reminders),
             )
 
@@ -91,6 +94,7 @@ def main() -> None:
             channel=CHANNEL,
             ts=timestamp,
         )
+
 
 if __name__ == "__main__":
     main()

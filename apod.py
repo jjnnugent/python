@@ -31,7 +31,7 @@ def main() -> None:
 
     # ADDRESS = "https://apod.nasa.gov/apod/astropix.html"
     # temporary solution during NASA haitus due to potential goverment shutdown
-    address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/a.html"
+    address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/apod.html"
     response = requests.get(url=address)
     tree = HTMLParser(html=response.text)
 

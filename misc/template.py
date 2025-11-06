@@ -10,3 +10,9 @@ load_dotenv(os.path.expanduser("~/python/.env"))
 #
 # fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 # logger = logging.getLogger("------")
+
+# logger.debug("1 debug")
+# logger.info("2 info")
+# logger.warning("3 warning")
+# logger.error("4 error")
+# logger.critical("5 criitcal")

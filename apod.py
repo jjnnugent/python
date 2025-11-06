@@ -1,121 +1,122 @@
-import logging
 from logging.config import fileConfig
+import logging
 import os
 import re
-from urllib.parse import urljoin
+from time import sleep
+import urllib.parse
 
 from curl_cffi import requests
 from dotenv import load_dotenv
 from selectolax.parser import HTMLParser
-from slack_sdk.errors import SlackApiError
-from slack_sdk import WebClient
 
-slagger = logging.getLogger(name="slack_sdk.web.base_client")
-slagger.disabled = 1
-
-load_dotenv(dotenv_path=os.path.expanduser("~/python/.env"))
-fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
-logger = logging.getLogger(name="apod--")
-
-# ADDRESS = "https://apod.nasa.gov/apod/astropix.html"
-# temporary solution during NASA haitus due to potential goverment shutdown
-ADDRESS = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/apod.html"
+from utils.slack import slack_message
 
 
-def clean_explanation(text: str) -> str:
-    # replace n tags with spaces
-    text = re.sub(pattern=r"\n", repl=" ", string=text, flags=re.I)
-    # remove preamble + tags p b i u s
-    text = re.sub(
-        pattern=r"\<\/?[bipus]\>|\s*explanation:\s*", repl="", string=text, flags=re.I
-    )
-    # clean spaces
-    text = re.sub(pattern=r"\s+", repl=" ", string=text, flags=re.I)
-    # replace short links
-    text = re.sub(
-        pattern=r"(?<=href=\")(ap\d+\.html?)",
-        repl=urljoin(ADDRESS, r"\1"),
-        string=text,
-        flags=re.I,
-    )
-    # reformat hyperlinks
-    text = re.sub(
-        pattern=r"\<a\s*href=\"([^\"]+)\"\>([^\<]+)\<\/a\>",
-        repl=r"<\1|\2>",
-        string=text,
-        flags=re.I,
-    )
-
-    return text.strip()
+load_dotenv()
+BOT = os.getenv("WATCHER_TOKEN")
+CHANNEL = os.getenv("APOD_CHANNEL")
+ICON = "https://ik.imagekit.io/eetmbg795/ngt1-br.png"
 
 
-def slack_message(
-    block: list | None, message="Astronomy Picture of the Day", links=False, media=False
-) -> None:
-    client = WebClient(token=os.getenv("WATCHER_TOKEN"))
-    try:
-        client.chat_postMessage(
-            channel=os.getenv("APOD_CHANNEL"),
-            unfurl_links=links,
-            unfurl_media=media,
-            blocks=block,
-            text=message,
+def main() -> None:
+    # image
+    # address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/ap250919.html"
+
+    # video/mp4
+    # address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/ap250518.html"
+
+    # youtube
+    # address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/ap250506.html"
+
+
+    # ADDRESS = "https://apod.nasa.gov/apod/astropix.html"
+    # temporary solution during NASA haitus due to potential goverment shutdown
+    address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/a.html"
+    response = requests.get(url=address)
+    tree = HTMLParser(html=response.text)
+
+    desc = tree.css_first("body > p")
+    if desc:
+        desc = desc.text()
+        desc = re.sub(pattern=r"\s+", repl=" ", string=desc)
+        desc = re.sub(pattern=r"\s*explanation:\s*", repl="", string=desc, flags=re.I)
+
+    frame = tree.css_first("iframe")
+    image = tree.css_first("img")
+    name = tree.css_first("b")
+    if name:
+        name = name.text(strip=True)
+    source = tree.css_first("source")
+
+    if image:
+        src = urllib.parse.urljoin(base=address, url=image.attrs["src"])
+
+        apod = slack_message(
+            passw=BOT,
+            timing=True,
+            channel=CHANNEL,
+            text=f"{name}\n{src}",
+            unfurl_links=False,
+            unfurl_media=True,
+            icon_url=ICON,
+            username="Astronomy Picture of the Day",
         )
-        logger.info("slack message sent")
-    except SlackApiError as error:
-        logger.error("%s", error)
+
+        sleep(4)
+
+        slack_message(
+            passw=BOT,
+            update=True,
+            channel=CHANNEL,
+            ts=apod,
+            text=desc,
+        )
+
+    elif frame:
+        media = frame.attrs["src"]
+        media = re.sub(
+            pattern=r"^http.*?([\w\-]{11}).*$",
+            repl=r"https://www.youtube.com/watch?v=\1",
+            string=media,
+            flags=re.I,
+        )
+
+        slack_message(
+            passw=BOT,
+            channel=CHANNEL,
+            text=f"{desc}\n{media}",
+            icon_url=ICON,
+            username="Astronomy Video of the Day",
+            unfurl_links=False,
+            unfurl_media=True,
+        )
+
+    elif source:
+        src = urllib.parse.urljoin(base=address, url=source.attrs["src"])
+
+        slack_message(
+            passw=BOT,
+            channel=CHANNEL,
+            text=f"{desc}\n{src}",
+            icon_url=ICON,
+            username="Astronomy Video of the Day",
+            unfurl_media=True,
+        )
+
+    else:
+        slack_message(
+            passw=BOT,
+            channel=CHANNEL,
+            text=f"APOD not found\n{address}",
+            icon_url=ICON,
+            username="Astronomy Picture of the Day",
+            unfurl_links=False,
+        )
+
+        fileConfig(os.path.expanduser("~/logs/logging.conf"))
+        logger = logging.getLogger("apod--")
+        logger.warning("no image/video found")
 
 
 if __name__ == "__main__":
-    response = requests.get(url=ADDRESS, allow_redirects=True)
-    if response.status_code == 200:
-        tree = HTMLParser(html=response.content)
-        title = tree.css_first("b").text().strip()
-        image = tree.css_first("img")
-        video = tree.css_first("iframe")
-        explanation = clean_explanation(text=tree.css_first("body > p").html)
-
-        if image is not None:
-            src = urljoin(ADDRESS, image.attrs["src"])
-            temp = [
-                {"type": "image", "image_url": src, "alt_text": title},
-                {
-                    "type": "context",
-                    "elements": [{"type": "mrkdwn", "text": explanation}],
-                },
-            ]
-
-            slack_message(block=temp)
-
-        elif video is not None:
-            re_video = re.search(
-                pattern=r"(?<=youtube).*?([\-\w]{11})", string=video.attrs["src"]
-            )
-
-            if re_video:
-                video_url = f"https://www.youtube.com/watch?v={re_video.group(1)}"
-
-            else:
-                video_url = video.attrs["src"]
-
-            slack_message(block=None, message=video_url, media=True)
-
-            temp = [
-                {
-                    "type": "context",
-                    "elements": [{"type": "mrkdwn", "text": explanation}],
-                },
-            ]
-
-            slack_message(block=temp, message="Astronomy Video of the Day")
-
-        else:
-            logger.warning("image/video not found")
-            slack_message(
-                block=None,
-                message="No APOD found because Mika is a stinky poopoo head.\nClick the link yourself you lazy sacks of crap:\nhttps://apod.nasa.gov/apod/",
-            )
-        if temp:
-            logger.info(temp)
-    else:
-        logger.warning("returned status code %s", response.status_code)
+    main()

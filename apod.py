@@ -62,7 +62,7 @@ def main() -> None:
             username="Astronomy Picture of the Day",
         )
 
-        sleep(4)
+        sleep(5)
 
         slack_message(
             passw=BOT,

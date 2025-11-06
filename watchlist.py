@@ -19,7 +19,6 @@ slagger = logging.getLogger(name="slack_sdk.web.base_client")
 slagger.disabled = 1
 logger = logging.getLogger("wlist-")
 
-
 RE_VIDEOS = re.compile(
     pattern=r"(?:reelWatchEndpoint|(?:playlist)?[vV]ideoRenderer)\":\{\"videoId\":\"([^\"]+)\""
 )

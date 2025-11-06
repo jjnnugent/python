@@ -11,7 +11,6 @@ load_dotenv()
 BOT = os.getenv("DOZAR_TOKEN")
 CHANNEL = os.getenv("DOZAR_CHANNEL")
 
-
 quotes = [
     "Did you bring me meat?",
     "Feed me!",

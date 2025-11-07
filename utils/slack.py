@@ -14,6 +14,7 @@ def slack_message(
     reactions: None | bool = None,
     timing: None | bool = None,
     update: None | bool = None,
+    upload: None | bool = None,
     **kwargs,
 ) -> None:
     client = WebClient(token=passw)
@@ -24,15 +25,17 @@ def slack_message(
     logger = logging.getLogger("slack-")
 
     try:
-        if private:
+        if upload:
+            response = client.files_upload_v2(**kwargs)
+        elif update:
+            response = client.chat_update(**kwargs)
+        elif private:
             response = client.chat_postEphemeral(**kwargs)
         elif reactions:
             response = client.reactions_get(**kwargs)
             return response["message"].get("reactions")
         elif delete:
             response = client.chat_delete(**kwargs)
-        elif update:
-            response = client.chat_update(**kwargs)
         else:
             response = client.chat_postMessage(**kwargs)
 

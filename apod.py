@@ -14,7 +14,7 @@ from utils.slack import slack_message
 
 load_dotenv()
 BOT = os.getenv("WATCHER_TOKEN")
-CHANNEL = os.getenv("SANDBOX_CHANNEL")
+CHANNEL = os.getenv("APOD_CHANNEL")
 ICON = "https://ik.imagekit.io/eetmbg795/ngt1-br.png"
 USERNAME = "Neil deGod Tyson"
 

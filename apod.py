@@ -162,9 +162,9 @@ def main() -> None:
             username=USERNAME,
         )
 
-    fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
-    logger = logging.getLogger("apod--")
-    logger.warning("no image/video found")
+        fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
+        logger = logging.getLogger("apod--")
+        logger.warning("no image/video found")
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ tftbot = App(
 @tftbot.event("message")
 def message_event(event, logger, say):
     logger.info(event)
+
     name = event.get("text")
     if name == "sol":
         name = "aurelionsol"
@@ -62,8 +63,13 @@ def message_event(event, logger, say):
         name = "xinzhao"
 
     data = load_json(os.path.expanduser("~/data/tft.json"))
+
+    if name == "list":
+        say(data.keys())
+
     if name in data.keys():
         images = data.get(name)
+
         elems = []
         for src in images:
             elems.append(

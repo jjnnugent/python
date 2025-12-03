@@ -65,7 +65,8 @@ def message_event(event, logger, say):
     data = load_json(os.path.expanduser("~/data/tft.json"))
 
     if name == "list":
-        say(data.keys())
+        champ_list = str(data.keys())
+        say(champ_list)
 
     if name in data.keys():
         images = data.get(name)

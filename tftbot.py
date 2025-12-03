@@ -67,7 +67,7 @@ def message_event(ack, event, logger, say):
         data = load_json(os.path.expanduser("~/data/tft.json"))
 
         if name == "list":
-            champ_list = str(data.keys())
+            champ_list = ", ".join(data.keys())
             say(champ_list)
 
         if name in data.keys():

@@ -19,7 +19,7 @@ tftbot = App(
 @tftbot.event("message")
 def message_event(ack, event, logger, say):
     logger.info(event)
-    if event.get("subtype") is None:
+    if event.get("subtype"):
         ack()
     else:
         name = event.get("text")

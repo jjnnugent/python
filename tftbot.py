@@ -3,6 +3,7 @@ import os
 import re
 
 from dotenv import load_dotenv
+import pandas as pd
 from slack_bolt import App
 
 from utils.file import load_json
@@ -23,6 +24,99 @@ def message_event(ack, event, logger, say):
         ack()
     else:
         name = event.get("text")
+
+        re_odds = re.match(pattern=r"^%\s*([1-9]|1[01])?$", string=name, flags=re.I)
+        if re_odds:
+            odds = pd.DataFrame(
+                {
+                    "1": [
+                        "100%",
+                        "100%",
+                        "75%",
+                        "55%",
+                        "45%",
+                        "30%",
+                        "19%",
+                        "17%",
+                        "15%",
+                        "5%",
+                        "1%",
+                    ],
+                    "2": [
+                        "0%",
+                        "0%",
+                        "25%",
+                        "30%",
+                        "33%",
+                        "40%",
+                        "30%",
+                        "24%",
+                        "18%",
+                        "10%",
+                        "2%",
+                    ],
+                    "3": [
+                        "0%",
+                        "0%",
+                        "0%",
+                        "15%",
+                        "20%",
+                        "25%",
+                        "40%",
+                        "32%",
+                        "25%",
+                        "20%",
+                        "12%",
+                    ],
+                    "4": [
+                        "0%",
+                        "0%",
+                        "0%",
+                        "0%",
+                        "2%",
+                        "5%",
+                        "10%",
+                        "24%",
+                        "30%",
+                        "40%",
+                        "50%",
+                    ],
+                    "5": [
+                        "0%",
+                        "0%",
+                        "0%",
+                        "0%",
+                        "0%",
+                        "0%",
+                        "1%",
+                        "3%",
+                        "12%",
+                        "25%",
+                        "35%",
+                    ],
+                },
+                index=[
+                    "lev1",
+                    "lev2",
+                    "lev3",
+                    "lev4",
+                    "lev5",
+                    "lev6",
+                    "lev7",
+                    "lev8",
+                    "lev9",
+                    "lev10",
+                    "lev11",
+                ],
+            )
+
+            lev = re_odds.group(1)
+            if lev:
+                result = odds.loc["lev" + lev].to_string()
+            else:
+                result = odds.to_string()
+            say(f"```{result}```")
+
         if name == "sol":
             name = "aurelionsol"
         if name == "baron" or name == "nashor":
@@ -74,12 +168,12 @@ def message_event(ack, event, logger, say):
             images = data.get(name)
 
             elems = []
-            for src in images:
+            for image_src, image_alt in images:
                 elems.append(
                     {
                         "type": "image",
-                        "image_url": src,
-                        "alt_text": "",
+                        "image_url": image_src,
+                        "alt_text": image_alt,
                     }
                 )
 

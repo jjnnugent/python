@@ -51,9 +51,10 @@ if __name__ == "__main__":
 
                     for i in range(len(bis)):
                         for item in items:
+                            item_alt = item.get("key")
                             item_name = item.get("ingameKey")
                             if item_name and item_name == bis[i]:
-                                bis[i] = "http:" + item.get("imageUrl")
+                                bis[i] = ["http:" + item.get("imageUrl"), item_alt]
                 else:
                     continue
 

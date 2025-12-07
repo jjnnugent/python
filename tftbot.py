@@ -18,12 +18,14 @@ tftbot = App(
 
 
 @tftbot.event("message")
-def message_event(ack, event, logger, say):
+def message_event(ack, client, event, logger, say):
     logger.info(event)
     if event.get("subtype"):
         ack()
     else:
+        channel_id = event.get("channel")
         name = event.get("text")
+        user_id = event.get("user")
 
         re_odds = re.match(pattern=r"^%\s*([1-9]|1[01])?$", string=name, flags=re.I)
         if re_odds:
@@ -112,10 +114,25 @@ def message_event(ack, event, logger, say):
 
             lev = re_odds.group(1)
             if lev:
-                result = odds.loc["lev" + lev].to_string()
+                num = int(lev)
+                result = str()
+                rows = odds.to_string().split("\n")
+
+                for i in range(len(rows)):
+                    if i == num:
+                        result += "\n" + "-" * len(rows[i])
+                    result += "\n" + rows[i]
+                    if i == num:
+                        result += "\n" + "-" * len(rows[i])
             else:
                 result = odds.to_string()
-            say(f"```{result}```")
+
+            # say(f"```{result}```")
+            client.chat_postEphemeral(
+                channel=channel_id,
+                user=user_id,
+                text=f"```{result}```",
+            )
 
         if name == "sol":
             name = "aurelionsol"
@@ -160,9 +177,14 @@ def message_event(ack, event, logger, say):
 
         data = load_json(os.path.expanduser("~/data/tft.json"))
 
-        if name == "list":
+        if name == "champs" or name == "list":
             champ_list = ", ".join(data.keys())
-            say(champ_list)
+            # say(champ_list)
+            client.chat_postEphemeral(
+                channel=channel_id,
+                user=user_id,
+                text=champ_list,
+            )
 
         if name in data.keys():
             images = data.get(name)
@@ -184,7 +206,13 @@ def message_event(ack, event, logger, say):
                 }
             ]
 
-            say(text=f"{name} bis", blocks=block)
+            # say(text=f"{name} bis", blocks=block)
+            client.chat_postEphemeral(
+                channel=channel_id,
+                user=user_id,
+                blocks=block,
+                text=f"{name} bis",
+            )
 
 
 if __name__ == "__main__":

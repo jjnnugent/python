@@ -27,7 +27,7 @@ def message_event(ack, client, event, logger, say):
         name = event.get("text")
         user_id = event.get("user")
 
-        re_odds = re.match(pattern=r"^%\s*([1-9]|1[01])?$", string=name, flags=re.I)
+        re_odds = re.match(pattern=r"^%\s*([1-9]|1[01])?\*?$", string=name, flags=re.I)
         if re_odds:
             odds = pd.DataFrame(
                 {
@@ -113,17 +113,20 @@ def message_event(ack, client, event, logger, say):
             )
 
             lev = re_odds.group(1)
-            if lev:
+            if lev and name.endswith("*"):
                 num = int(lev)
-                result = str()
                 rows = odds.to_string().split("\n")
 
+                result = str()
                 for i in range(len(rows)):
                     if i == num:
                         result += "\n" + "-" * len(rows[i])
                     result += "\n" + rows[i]
                     if i == num:
                         result += "\n" + "-" * len(rows[i])
+            elif lev:
+                num = int(lev)
+                result = odds.loc[["lev" + lev]].to_string()
             else:
                 result = odds.to_string()
 
@@ -186,7 +189,7 @@ def message_event(ack, client, event, logger, say):
                 text=champ_list,
             )
 
-        if name in data.keys():
+        elif name in data.keys():
             images = data.get(name)
 
             elems = []
@@ -199,19 +202,34 @@ def message_event(ack, client, event, logger, say):
                     }
                 )
 
-            block = [
+            bis_block = [
                 {
                     "type": "context",
                     "elements": elems,
                 }
             ]
 
+            comp_block = list()
+            for comp in data["comps"]:
+                if name in comp:
+                    comp_block.append(
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "plain_text",
+                                "text": ", ".join(comp),
+                                "emoji": False,
+                            },
+                        }
+                    )
+
             # say(text=f"{name} bis", blocks=block)
+            block = bis_block + comp_block
             client.chat_postEphemeral(
                 channel=channel_id,
                 user=user_id,
                 blocks=block,
-                text=f"{name} bis",
+                text=name,
             )
 
 

@@ -20,8 +20,10 @@ def dict_keys(dump: dict, end: str) -> list:
         if key == "queries":
             if end == "champions":
                 step = step[0]
-            else:
+            elif end == "items":
                 step = step[2]
+            else:
+                step = step[3]
     return step
 
 
@@ -40,7 +42,14 @@ if __name__ == "__main__":
             json_data = json.loads(re_json.group(1))
 
             champs = dict_keys(dump=json_data, end="champions")
+            if not champs:
+                logger.warning("missing champs data")
+            comps = dict_keys(dump=json_data, end="guideDecks")
+            if not comps:
+                logger.warning("missing comps data")
             items = dict_keys(dump=json_data, end="items")
+            if not items:
+                logger.warning("missing items data")
             new = dict()
 
             for result in champs:
@@ -57,6 +66,19 @@ if __name__ == "__main__":
                                 bis[i] = ["http:" + item.get("imageUrl"), item_alt]
                 else:
                     continue
+
+            new['comps'] = list()
+            for comp in comps:
+                party = list()
+                name = comp.get("name")
+                slots = comp.get("data", {}).get("slots", {})
+                if slots:
+                    for slot in slots:
+                        champion = slot.get("champion").lower()
+                        if slot:
+                            party.append(champion)
+                if party:
+                    new['comps'].append([name] + party)
 
             save_json(data=new, name=os.path.expanduser("~/data/tft.json"))
 

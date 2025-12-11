@@ -63,7 +63,8 @@ if __name__ == "__main__":
                             item_alt = item.get("key")
                             item_name = item.get("ingameKey")
                             if item_name and item_name == bis[i]:
-                                bis[i] = ["http:" + item.get("imageUrl"), item_alt]
+                                image_url = item.get("imageUrl")
+                                bis[i] = [image_url if image_url.startswith("https:") else "https:" + image_url, item_alt]
                 else:
                     continue
 

@@ -78,7 +78,10 @@ def filter_data(data: dict) -> dict:
             comp_champ = slot.get("champion")
             if comp_champ:
                 comp_champ = comp_champ.lower()
-                team.append(comp_champ)
+                if comp_champ in ["azirultsoldier", "freljordprop"]:
+                    continue
+                else:
+                    team.append(comp_champ)
 
         team_comps.append(team)
 

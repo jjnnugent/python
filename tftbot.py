@@ -205,7 +205,7 @@ def message_event(ack, client, event, logger, say):
         elif name in data.keys():
             images = data.get(name, {}).get("bis", {})
 
-            bis_elems = []
+            bis_elems = list()
             for image_src, image_alt in images:
                 bis_elems.append(
                     {
@@ -225,13 +225,13 @@ def message_event(ack, client, event, logger, say):
             comp_block = list()
             for comp in data.get("comps"):
                 if name in comp:
-                    comp_elems = []
+                    comp_elems = list()
                     for comp_name in comp:
                         comp_elems.append(
                             {
                                 "type": "image",
-                                "image_url": data.get(name, {}).get("src", {}),
-                                "alt_text": data.get(name, {}).get("alt", {}),
+                                "image_url": data.get(comp_name, {}).get("src", {}),
+                                "alt_text": data.get(comp_name, {}).get("alt", {}),
                             }
                         )
                     comp_block.append(

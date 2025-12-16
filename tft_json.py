@@ -9,22 +9,81 @@ from utils.file import save_json
 from utils.slack import SlackHandler
 
 
-def dict_keys(dump: dict, end: str) -> list:
-    keys = ["props", "pageProps", "dehydratedState", "queries", "state", "data", end]
-    step = dump
-    for key in keys:
-        step = step.get(key, {})
-        if not step:
-            return []
+def filter_data(data: dict) -> dict:
+    queries = (
+        data.get("props", {})
+        .get("pageProps", {})
+        .get("dehydratedState", {})
+        .get("queries", {})
+    )
 
-        if key == "queries":
-            if end == "champions":
-                step = step[0]
-            elif end == "items":
-                step = step[2]
-            else:
-                step = step[3]
-    return step
+    for i in range(len(queries)):
+        sel = queries[i].get("state", {}).get("data", {})
+        if i == 0:
+            champs = sel.get("champions")
+        elif i == 2:
+            items = sel.get("items")
+        elif i == 3:
+            comps = sel.get("guideDecks")
+        else:
+            continue
+
+    if champs is None or items is None or comps is None:
+        logger.warning(
+            "champs(%s) items(%s) comps(%s) not found",
+            bool(champs),
+            bool(items),
+            bool(comps),
+        )
+        exit()
+
+    filtered_data = dict()
+    for champ in champs:
+        champ_alt = champ.get("name")
+        champ_img = champ.get("imageUrl")
+        champ_name = champ.get("key").lower()
+
+        bis_images = []
+        bis_items = champ.get("recommendItems")
+        if bis_items:
+            for bis_item in bis_items:
+                for item in items:
+                    item_key = item.get("ingameKey")
+                    if item_key == bis_item:
+                        item_alt = item.get("name")
+                        item_src = item.get("imageUrl")
+                        bis_images.append(
+                            [
+                                item_src
+                                if item_src.startswith("https:")
+                                else "https:" + item_src,
+                                item_alt,
+                            ]
+                        )
+
+            filtered_data[champ_name] = {
+                "alt": champ_alt,
+                "bis": bis_images,
+                "src": champ_img
+                if champ_img.startswith("https:")
+                else "https:" + champ_img,
+            }
+
+    team_comps = list()
+    for comp in comps:
+        slots = comp.get("data", {}).get("slots", {})
+
+        team = list()
+        for slot in slots:
+            comp_champ = slot.get("champion")
+            if comp_champ:
+                comp_champ = comp_champ.lower()
+                team.append(comp_champ)
+
+        team_comps.append(team)
+
+    filtered_data["comps"] = team_comps
+    return filtered_data
 
 
 if __name__ == "__main__":
@@ -40,49 +99,8 @@ if __name__ == "__main__":
 
         if re_json:
             json_data = json.loads(re_json.group(1))
-
-            champs = dict_keys(dump=json_data, end="champions")
-            if not champs:
-                logger.warning("missing champs data")
-            comps = dict_keys(dump=json_data, end="guideDecks")
-            if not comps:
-                logger.warning("missing comps data")
-            items = dict_keys(dump=json_data, end="items")
-            if not items:
-                logger.warning("missing items data")
-            new = dict()
-
-            for result in champs:
-                bis = result.get("recommendItems")
-                if bis:
-                    name = result.get("key").lower()
-                    new[name] = bis
-
-                    for i in range(len(bis)):
-                        for item in items:
-                            item_alt = item.get("key")
-                            item_name = item.get("ingameKey")
-                            if item_name and item_name == bis[i]:
-                                image_url = item.get("imageUrl")
-                                bis[i] = [image_url if image_url.startswith("https:") else "https:" + image_url, item_alt]
-                else:
-                    continue
-
-            new['comps'] = list()
-            for comp in comps:
-                party = list()
-                name = comp.get("name")
-                slots = comp.get("data", {}).get("slots", {})
-                if slots:
-                    for slot in slots:
-                        champion = slot.get("champion").lower()
-                        if slot:
-                            party.append(champion)
-                if party:
-                    new['comps'].append([name] + party)
-
-            save_json(data=new, name=os.path.expanduser("~/data/tft.json"))
-
+            tft_data = filter_data(data=json_data)
+            save_json(data=tft_data, name=os.path.expanduser("~/data/tft.json"))
         else:
             logger.warning("data not found")
     else:

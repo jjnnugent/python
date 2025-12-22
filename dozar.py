@@ -4,6 +4,8 @@ from time import sleep
 
 from dotenv import load_dotenv
 
+from utils.file import load_json
+from utils.file import save_json
 from utils.slack import slack_message
 
 
@@ -45,12 +47,22 @@ def dozar_was_fed(ts: str) -> bool:
         channel=CHANNEL,
         timestamp=ts,
     )
+
     if emojis:
         for emoji in emojis:
             if (
                 emoji.get("name") is not None
                 and emoji.get("name") == "white_check_mark"
             ):
+                user_ids = emoji.get("users")
+                if user_ids:
+                    scores = load_json(os.path.expanduser("~/data/dozar_score.json"))
+                    for user_id in user_ids:
+                        scores[user_id] += 1
+                    save_json(
+                        data=scores, name=os.path.expanduser("~/data/dozar_score.json")
+                    )
+
                 return True
 
     return False

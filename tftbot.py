@@ -13,43 +13,43 @@ def name_check(text: str) -> str:
     name = text
     if name == "sol":
         name = "aurelionsol"
-    if name == "baron" or name == "nashor":
+    elif name == "baron" or name == "nashor":
         name = "baronnashor"
-    if name == "blitz":
+    elif name == "blitz":
         name = "blitzcrank"
-    if name == "cho":
+    elif name == "cho":
         name = "chogath"
-    if name.startswith("dr"):
+    elif re.match(pattern=r"^(?:dr.?)?mundo$", string=name, flags=re.I):
         name = "drmundo"
-    if name == "gp":
+    elif name == "gp":
         name = "gangplank"
-    if name.startswith("il"):
+    elif name.startswith("il"):
         name = "illaoi"
-    if name == "jarvan":
+    elif name == "jarvan":
         name = "jarvaniv"
-    if name == "kobuko" or name == "yuumi":
+    elif name == "kobuko" or name == "yuumi":
         name = "kobukoyuumi"
-    if name.startswith("malz"):
+    elif name.startswith("malz"):
         name = "malzahar"
-    if name == "mf":
+    elif name == "mf":
         name = "missfortune"
-    if name == "lucian" or name == "senna":
+    elif name == "lucian" or name == "senna":
         name = "luciansenna"
-    if name == "nut":
+    elif name == "nut":
         name = "nautilus"
-    if name.startswith("qu") or name == "yana":
+    elif name.startswith("qu") or name == "yana":
         name = "quiyana"
-    if name == "rift" or name == "harold":
+    elif name == "rift" or name == "harold":
         name = "riftherald"
-    if name.startswith("sej"):
+    elif name.startswith("sej"):
         name = "sejuani"
-    if name.startswith("tom") or name.startswith("tahm"):
+    elif name.startswith("tom") or name.startswith("tahm"):
         name = "tahmkench"
-    if name.startswith("try"):
+    elif name.startswith("try"):
         name = "tryndamere"
-    if name == "tf":
+    elif name == "tf":
         name = "twistedfate"
-    if name.startswith("xin"):
+    elif name.startswith("xin"):
         name = "xinzhao"
 
     return name

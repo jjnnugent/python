@@ -181,7 +181,7 @@ def message_event(ack, client, event, logger, say):
 
         re_odds = re.match(pattern=r"^%\s*([1-9]|1[01])?\*?$", string=name, flags=re.I)
         if re_odds:
-            result = shop_odds(match=re.odds.group(1), text=name)
+            result = shop_odds(match=re_odds.group(1), text=name)
             # say(f"```{result}```")
             client.chat_postEphemeral(
                 channel=channel_id,
@@ -202,11 +202,16 @@ def message_event(ack, client, event, logger, say):
                 text=champ_list,
             )
 
-        elif name in data.keys():
-            images = data.get(name, {}).get("bis", {})
+        elif name in data["champs"].keys():
+            image_names = data["champs"].get(name, {}).get("bis", {})
+            if not image_names:
+                logger.warning("%s missing bis", name)
 
             bis_elems = list()
-            for image_src, image_alt in images:
+            for bis in image_names:
+                image_alt = data.get("items", {}).get(bis, {}).get("alt", {})
+                image_src = data.get("items", {}).get(bis, {}).get("src", {})
+
                 bis_elems.append(
                     {
                         "type": "image",
@@ -230,8 +235,12 @@ def message_event(ack, client, event, logger, say):
                         comp_elems.append(
                             {
                                 "type": "image",
-                                "image_url": data.get(comp_name, {}).get("src", {}),
-                                "alt_text": data.get(comp_name, {}).get("alt", {}),
+                                "image_url": data.get("champs", {})
+                                .get(comp_name, {})
+                                .get("src", {}),
+                                "alt_text": data.get("champs", {})
+                                .get(comp_name, {})
+                                .get("alt", {}),
                             }
                         )
                     comp_block.append(
@@ -243,12 +252,13 @@ def message_event(ack, client, event, logger, say):
 
             # say(text=f"{name} bis", blocks=block)
             block = bis_block + comp_block
-            client.chat_postEphemeral(
-                channel=channel_id,
-                user=user_id,
-                blocks=block,
-                text=name,
-            )
+            if block:
+                client.chat_postEphemeral(
+                    channel=channel_id,
+                    user=user_id,
+                    blocks=block,
+                    text=name,
+                )
 
 
 if __name__ == "__main__":

@@ -189,76 +189,76 @@ def message_event(ack, client, event, logger, say):
                 text=f"```{result}```",
             )
 
-        data = load_json(os.path.expanduser("~/data/tft.json"))
+        else:
+            data = load_json(os.path.expanduser("~/data/tft.json"))
+            name = name_check(text=name)
 
-        name = name_check(text=name)
-
-        if name == "champs" or name == "list":
-            champ_list = ", ".join(data.keys())
-            # say(champ_list)
-            client.chat_postEphemeral(
-                channel=channel_id,
-                user=user_id,
-                text=champ_list,
-            )
-
-        elif name in data["champs"].keys():
-            image_names = data["champs"].get(name, {}).get("bis", {})
-            if not image_names:
-                logger.warning("%s missing bis", name)
-
-            bis_elems = list()
-            for bis in image_names:
-                image_alt = data.get("items", {}).get(bis, {}).get("alt", {})
-                image_src = data.get("items", {}).get(bis, {}).get("src", {})
-
-                bis_elems.append(
-                    {
-                        "type": "image",
-                        "image_url": image_src,
-                        "alt_text": image_alt,
-                    }
-                )
-
-            bis_block = [
-                {
-                    "type": "context",
-                    "elements": bis_elems,
-                }
-            ]
-
-            comp_block = list()
-            for comp in data.get("comps"):
-                if name in comp:
-                    comp_elems = list()
-                    for comp_name in comp:
-                        comp_elems.append(
-                            {
-                                "type": "image",
-                                "image_url": data.get("champs", {})
-                                .get(comp_name, {})
-                                .get("src", {}),
-                                "alt_text": data.get("champs", {})
-                                .get(comp_name, {})
-                                .get("alt", {}),
-                            }
-                        )
-                    comp_block.append(
-                        {
-                            "type": "context",
-                            "elements": comp_elems,
-                        }
-                    )
-
-            # say(text=f"{name} bis", blocks=block)
-            block = bis_block + comp_block
-            if block:
+            if name == "champs" or name == "list":
+                champ_list = ", ".join(data.keys())
+                # say(champ_list)
                 client.chat_postEphemeral(
                     channel=channel_id,
                     user=user_id,
-                    blocks=block,
-                    text=name,
+                    text=champ_list,
                 )
+
+            elif name in data["champs"].keys():
+                image_names = data["champs"].get(name, {}).get("bis", {})
+                if not image_names:
+                    logger.warning("%s missing bis", name)
+
+                bis_elems = list()
+                for bis in image_names:
+                    image_alt = data.get("items", {}).get(bis, {}).get("alt", {})
+                    image_src = data.get("items", {}).get(bis, {}).get("src", {})
+
+                    bis_elems.append(
+                        {
+                            "type": "image",
+                            "image_url": image_src,
+                            "alt_text": image_alt,
+                        }
+                    )
+
+                bis_block = [
+                    {
+                        "type": "context",
+                        "elements": bis_elems,
+                    }
+                ]
+
+                comp_block = list()
+                for comp in data.get("comps"):
+                    if name in comp:
+                        comp_elems = list()
+                        for comp_name in comp:
+                            comp_elems.append(
+                                {
+                                    "type": "image",
+                                    "image_url": data.get("champs", {})
+                                    .get(comp_name, {})
+                                    .get("src", {}),
+                                    "alt_text": data.get("champs", {})
+                                    .get(comp_name, {})
+                                    .get("alt", {}),
+                                }
+                            )
+                        comp_block.append(
+                            {
+                                "type": "context",
+                                "elements": comp_elems,
+                            }
+                        )
+
+                # say(text=f"{name} bis", blocks=block)
+                block = bis_block + comp_block
+                if block:
+                    client.chat_postEphemeral(
+                        channel=channel_id,
+                        user=user_id,
+                        blocks=block,
+                        text=name,
+                    )
 
 
 if __name__ == "__main__":

@@ -22,16 +22,19 @@ quotes = [
     "MMMEEEOOOOOOOOOOOOOWW!!",
     "I require sustenance peasants. See to it at once!",
     "Want me to plop? You know what to do.",
-    "Who is going to feed me? :simple_smile:",
+    # "Who is going to feed me? :simple_smile:",
+    "Who loves me more? :smiley_cat:",
     "You feed me or I feed on you.. your choice.",
     "You wouldn't like me when I'm angry.",
 ]
 
 reminders = [
     "AHEM!",
+    "Need I remind you, I could end your miserable lives with a snap of my finger. :face_with_monocle:",
     "Anyone home?",
     "Curse those magic screens!",
-    "Did you forget about me? :pleading_face:",
+    ":pleading_face:",
+    "You didn't forget about me did you? :crying_cat_face:",
     "Food?",
     "Getting hangry...",
     "Hello?",

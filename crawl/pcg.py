@@ -33,7 +33,7 @@ def main() -> None:
 
     if response.status_code == 200:
         tree = HTMLParser(response.text)
-        nodes = tree.css("div.hawk-deal-widget-main")
+        nodes = tree.css("div.hawk-deal-widget-container")
 
         data = []
         for node in nodes:

@@ -10,7 +10,7 @@ from utils.file import load_json
 
 
 def name_check(text: str) -> str:
-    name = text
+    name = text.lower()
     if name == "sol":
         name = "aurelionsol"
     elif name == "baron" or name == "nashor":

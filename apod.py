@@ -21,17 +21,18 @@ USERNAME = "Neil deGod Tyson"
 
 def main() -> None:
     # image
-    # address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/ap250919.html"
+    # address = "https://apod.nasa.gov/apod/ap250919.html"
 
     # video/mp4
-    # address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/ap250518.html"
+    # address = "https://apod.nasa.gov/apod/ap250518.html"
 
     # youtube
-    # address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/ap250506.html"
+    # address = "https://apod.nasa.gov/apod/ap250506.html"
 
-    # ADDRESS = "https://apod.nasa.gov/apod/astropix.html"
-    # temporary solution during NASA haitus due to potential goverment shutdown
-    address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/apod.html"
+    # mirror
+    # address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/apod.html"
+
+    address = "https://apod.nasa.gov/apod/astropix.html"
     response = requests.get(url=address)
     tree = HTMLParser(html=response.text)
 

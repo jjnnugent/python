@@ -379,9 +379,9 @@ def gld(text="", csv=False) -> None | str:
             re.sub(pattern=r"^(\d+).*$", repl=r"\1", string=item.get("mem"), flags=re.I)
         )
         res = ""
-        hz = re.search(
-            pattern=r"(\d{3})", string=item.get("hz")
-        ).group(1)
+        re_hz = re.search(pattern=r"(\d{3})", string=item.get("hz"))
+        if re_hz:
+            hz = re_hz.group(1)
         screen.append(res + hz)
         ssd.append(
             re.sub(

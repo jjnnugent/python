@@ -9,9 +9,11 @@ from dotenv import load_dotenv
 from selectolax.parser import HTMLParser
 from slack_sdk import WebClient
 
+load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger(name="gl-pcg")
-load_dotenv(os.path.expanduser("~/python/.env"))
+slagger = logging.getLogger(name="slack_sdk.web.base_client")
+slagger.disabled = 1
 
 
 def save_file(data) -> None:
@@ -29,7 +31,8 @@ def slack_message(message: str) -> None:
 
 def main() -> None:
     address = os.getenv("URL_PCG")
-    response = requests.get(url=address, allow_redirects=True, impersonate="chrome")
+    response = requests.get(
+        url=address, allow_redirects=True, impersonate="chrome")
 
     if response.status_code == 200:
         tree = HTMLParser(response.text)
@@ -37,15 +40,19 @@ def main() -> None:
 
         data = []
         for node in nodes:
-            link = node.css_first("a.hawk-affiliate-link-container").attrs["href"]
+            link = node.css_first(
+                "a.hawk-affiliate-link-container").attrs["href"]
             price = node.css_first("span.hawk-deal-widget-title-price").text()
-            price = re.sub(pattern=r"now(\s*)|\$|,", repl="", string=price, flags=re.I)
+            price = re.sub(pattern=r"now(\s*)|\$|,",
+                           repl="", string=price, flags=re.I)
 
             if price.startswith("£"):
                 continue
 
-            brand = node.css_first("span.hawk-deal-widget-title-product-title").text()
-            brand = re.sub(pattern=r"(\s*)\|.*$", repl="", string=brand, flags=re.I)
+            brand = node.css_first(
+                "span.hawk-deal-widget-title-product-title").text()
+            brand = re.sub(pattern=r"(\s*)\|.*$", repl="",
+                           string=brand, flags=re.I)
             props = node.css_first("p > strong").text()
             props = re.sub(
                 pattern=r"key\s*specs\:\s*|\s*hz|\-inch",
@@ -53,14 +60,16 @@ def main() -> None:
                 string=props,
                 flags=re.I,
             )
-            props = re.sub(pattern=r"\s*\|\s*$", repl="", string=props, flags=re.I)
+            props = re.sub(pattern=r"\s*\|\s*$", repl="",
+                           string=props, flags=re.I)
             props = props.split(" | ", maxsplit=6)
 
             if len(props) < 6:
                 continue
 
             temp = {}
-            names = ["brand", "price", "link", "gpu", "cpu", "inch", "hz", "mem", "ssd"]
+            names = ["brand", "price", "link", "gpu",
+                     "cpu", "inch", "hz", "mem", "ssd"]
             for key, value in zip(names, [brand, price, link] + props[:3] + props[-3:]):
                 temp[key] = value
             data.append(temp)

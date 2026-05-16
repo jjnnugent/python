@@ -1,118 +1,213 @@
-from datetime import datetime
-from logging.config import fileConfig
+import datetime
 import logging
+import json
 import os
 import re
+
+from random import randint
 from time import sleep
 
 from curl_cffi import requests
 from dotenv import load_dotenv
-
 from utils.file import load_json
 from utils.file import save_json
+from utils.slack import SlackHandler
 from utils.slack import slack_message
 
 
-load_dotenv()
-fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
-slagger = logging.getLogger(name="slack_sdk.web.base_client")
-slagger.disabled = 1
-logger = logging.getLogger("wlist-")
-
-RE_VIDEOS = re.compile(
-    pattern=r"(?:reelWatchEndpoint|(?:playlist)?[vV]ideoRenderer)\":\{\"videoId\":\"([^\"]+)\""
-)
+logging.config.fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
+logger = logging.getLogger("watchl")
+logger.addHandler(SlackHandler())
+load_dotenv(os.path.expanduser("~/python/.env"))
+RE_VIDEOS = re.compile(r"ytInitialData = (\{.*?)(?=;<\/)")
+BOT_TOKEN = os.getenv("WATCHER_TOKEN")
 
 
-def load_videos(name: str, channel_type: str) -> list:
-    sleep(2)
+def load_videos(channel_type: str, channel_name: str) -> list:
+    n = randint(2, 8)
+    sleep(n)
+    result = []
+    address = "https://www.youtube.com/@" + channel_name
     if channel_type == "shorts":
-        address = f"https://www.youtube.com/@{name}/shorts"
-    elif channel_type == "playlist" or channel_type == "playlist_bottom":
-        address = f"https://www.youtube.com/playlist?list={name}"
+        address += "/shorts"
     else:
-        address = f"https://www.youtube.com/@{name}/videos"
-    response = requests.get(url=address)
-    if response.status_code == 200:
-        video_ids = RE_VIDEOS.findall(string=response.text)
-        if channel_type == "playlist_bottom":
-            latest = video_ids[-3:]
-            latest.reverse()
-            return latest
-        return video_ids[:3]
-    else:
-        logger.warning("%s returned status code %s", address, response.status_code)
+        address += "/videos"
+
+    try:
+        response = requests.get(
+            url=address,
+            allow_redirects=True,
+            impersonate="chrome")
+    except Exception as e:
+        logger.error(e)
         return []
+
+    if response.status_code == 200:
+        try:
+            re_match = RE_VIDEOS.search(response.text)
+            if re_match:
+                dump = json.loads(re_match.group(1))
+            else:
+                logger.error("%s regex not found", channel_name)
+                return []
+
+            count = 0
+            if channel_type == "shorts":
+                tabs = dump['contents']['twoColumnBrowseResultsRenderer']['tabs']
+                for tab in tabs:
+                    if tab['tabRenderer'].get("title") == "Shorts":
+                        data = tab['tabRenderer']['content']['richGridRenderer']['contents']
+                        break
+                for item in data:
+                    if item.get("continuationItemRenderer"):
+                        break
+                    else:
+                        count += 1
+                        title = item['richItemRenderer']['content']['shortsLockupViewModel']['overlayMetadata']['primaryText']['content']
+                        views = item['richItemRenderer']['content']['shortsLockupViewModel']['overlayMetadata']['secondaryText']['content']
+                        video_id = item['richItemRenderer']['content']['shortsLockupViewModel'][
+                            'onTap']['innertubeCommand']['reelWatchEndpoint']['videoId']
+                        result.append(
+                            {
+                                'title': title,
+                                'views': views,
+                                'video_id': video_id,
+                            }
+                        )
+
+                    if count == 3:
+                        break
+            else:
+                tabs = dump['contents']['twoColumnBrowseResultsRenderer']['tabs']
+                for tab in tabs:
+                    if tab['tabRenderer'].get("title") == "Videos":
+                        data = tab['tabRenderer']['content']['richGridRenderer']['contents']
+                        break
+
+                for item in data:
+                    if item.get("continuationItemRenderer"):
+                        break
+                    else:
+                        meta_rows = item['richItemRenderer']['content']['lockupViewModel']['metadata'][
+                            'lockupMetadataViewModel']['metadata']['contentMetadataViewModel']['metadataRows']
+                        if len(meta_rows) > 1:
+                            continue
+                        else:
+                            count += 1
+                            title = item['richItemRenderer']['content']['lockupViewModel']['metadata'][
+                                'lockupMetadataViewModel']['title']['content']
+                            views = meta_rows[0]['metadataParts'][0]['text']['content']
+                            when = meta_rows[0]['metadataParts'][1]['text']['content']
+                            video_id = item['richItemRenderer']['content']['lockupViewModel']['contentId']
+                            result.append(
+                                {
+                                    'title': title,
+                                    'views': views,
+                                    'when': when,
+                                    'video_id': video_id,
+                                }
+                            )
+
+                    if count == 3:
+                        break
+
+        except Exception as e:
+            logger.error(e)
+            return []
+
+    else:
+        logger.warning("%s %s", channel_name, response.status_code)
+
+    return result
 
 
 if __name__ == "__main__":
-    modified = False
-    now = datetime.now()
-    day = now.isoweekday()
     # 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat, 7 = Sun
-    hour = now.hour
+    current_time = datetime.datetime.now()
+    today = current_time.isoweekday()
+    hour = current_time.hour
+    modified = False
 
-    data = load_json(os.path.expanduser("~/data/watchlist.json"))
-    for format, entry in data.items():
+    data = load_json(name=os.path.expanduser("~/data/watchlist.json"))
+    for video_type, entry in data.items():
         for channel in entry:
-            channel_days = data[format][channel].get("days_of_week")
-            channel_hour = data[format][channel].get("hour_of_day")
-            slack_channel = data[format][channel].get("slack_channel")
-            title = channel
-            if data[format][channel].get("title") is not None:
-                title = data[format][channel].get("title")
-
-            # format = data[channel].get("type")
-            old = data[format][channel].get("videos")
+            channel_days = data[video_type][channel].get("days_of_week")
+            channel_hours = data[video_type][channel].get("hour_of_day")
+            channel_id = data[video_type][channel].get("slack_channel")
+            old = data[video_type][channel].get("videos")
 
             if len(old) == 0:
-                logger.info("%s loading first videos", title)
-                data[format][channel]["videos"] = load_videos(
-                    name=channel, channel_type=format
-                )
-                data[format][channel]["last_updated"] = str(now)
-                modified = True
-                continue
+                new = load_videos(channel_type=video_type,
+                                  channel_name=channel)
+                if new:
+                    data[video_type][channel]['videos'] = new
+                    data[video_type][channel]['last_updated'] = str(
+                        current_time)
+                    modified = True
+                    logger.debug("%s first videos loaded %s", channel, new)
+                else:
+                    logger.warning("%s first videos not found", channel)
 
-            if channel_days is None or day in channel_days:
-                if channel_hour is None or channel_hour == hour:
-                    new = load_videos(name=channel, channel_type=format)
-                    if old == new:
-                        logger.debug("%s no change %s", title, old)
+            elif today in channel_days and hour in channel_hours:
+                new = load_videos(channel_type=video_type,
+                                  channel_name=channel)
+                old_id = old[0]['video_id']
+                new_id = new[0]['video_id']
+                # print(f"old id = {old_id} -- new id = {new_id}")
+                if old_id == new_id:
+                    logger.debug("%s no update", channel)
+
+                elif new_id:
+                    update_slack = False
+                    data[video_type][channel]['videos'] = new
+                    data[video_type][channel]['last_updated'] = str(
+                        current_time)
+                    modified = True
+                    logger.debug("%s new %s", channel, new)
+
+                    keywords = data[video_type][channel].get("keywords")
+                    title = new[0]['title']
+                    if keywords:
+                        re_match = re.search(
+                            pattern=keywords, string=title, flags=re.I)
+                        if re_match:
+                            update_slack = True
                     else:
-                        link = "https://www.youtube.com/"
-                        link += "shorts/" if format == "shorts" else "watch?v="
-                        link += new[0]
-                        slack_block = [
+                        update_slack = True
+
+                    if update_slack:
+                        views = new[0]['views']
+                        views = views if views.endswith(
+                            "views") else views + " views"
+                        href = "https://www.youtube.com/"
+                        if video_type == "shorts":
+                            href += "shorts/"
+                        else:
+                            href += "watch?v="
+                        href += new[0].get("video_id")
+                        block = [
                             {
                                 "type": "section",
                                 "text": {
                                     "type": "mrkdwn",
-                                    "text": f"{title} new video!\n{link}",
-                                },
+                                    "text": f"{href}"
+                                }
                             }
                         ]
-
-                        logger.info("%s new video %s", title, new)
                         sent = slack_message(
-                            timing=True,
-                            passw=os.getenv("WATCHER_TOKEN"),
-                            channel=slack_channel,
-                            blocks=slack_block,
-                            text=f"{title} new video!",
+                            passw=BOT_TOKEN,
+                            channel=channel_id,
+                            blocks=block,
+                            text=f"@{channel} {title} ({views})",
                         )
-
-                        if sent:
-                            data[format][channel]["videos"] = new
-                            data[format][channel]["last_updated"] = str(now)
-                            modified = True
-
                 else:
-                    logger.debug("%s not hour of %s", title, channel_hour)
+                    logger.warning("%s videos not found", channel)
+
             else:
-                logger.debug("%s not day of %s", title, channel_days)
+                logger.debug("not %s days %s or hours %s",
+                             channel, channel_days, channel_hours)
 
     if modified:
-        save_json(data, os.path.expanduser("~/data/watchlist.json"))
+        save_json(data=data, name=os.path.expanduser("~/data/watchlist.json"))
     else:
-        logger.debug("no updates")
+        logger.info("no updates")

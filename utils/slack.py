@@ -1,4 +1,4 @@
-from logging.config import fileConfig
+# from logging.config import fileConfig
 import logging
 import os
 
@@ -19,10 +19,10 @@ def slack_message(
 ) -> None:
     client = WebClient(token=passw)
 
-    fileConfig(os.path.expanduser("~/logs/logging.conf"))
+    # fileConfig(os.path.expanduser("~/logs/logging.conf"))
+    slogger = logging.getLogger("slack-")
     slagger = logging.getLogger(name="slack_sdk.web.base_client")
     slagger.disabled = 1
-    logger = logging.getLogger("slack-")
 
     try:
         if upload:
@@ -43,7 +43,7 @@ def slack_message(
             return response["message"].get("ts")
 
     except SlackApiError as e:
-        logger.error("%s %s", kwargs, e)
+        slogger.error("%s %s", kwargs, e)
 
 
 class SlackHandler(logging.Handler):
@@ -51,9 +51,11 @@ class SlackHandler(logging.Handler):
         if record.levelno >= logging.WARNING:
             name = record.name
             msg = record.getMessage()
-            sev = record.levelname[:4]
+            sev = record.levelname
             log = f"{name} {msg} [{sev}]"
 
+            # slagger = logging.getLogger(name="slack_sdk.web.base_client")
+            # slagger.disabled = 1
             load_dotenv()
             slack_message(
                 passw=os.getenv("WATCHER_TOKEN"),

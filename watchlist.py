@@ -58,9 +58,11 @@ def load_videos(channel_type: str, channel_name: str) -> list:
                     if tab['tabRenderer'].get("title") == "Shorts":
                         data = tab['tabRenderer']['content']['richGridRenderer']['contents']
                         break
+
                 for item in data:
                     if item.get("continuationItemRenderer"):
                         break
+
                     else:
                         count += 1
                         title = item['richItemRenderer']['content']['shortsLockupViewModel']['overlayMetadata']['primaryText']['content']
@@ -85,19 +87,24 @@ def load_videos(channel_type: str, channel_name: str) -> list:
                         break
 
                 for item in data:
+                    keep_going = True
                     if item.get("continuationItemRenderer"):
                         break
+
                     else:
                         meta_rows = item['richItemRenderer']['content']['lockupViewModel']['metadata'][
                             'lockupMetadataViewModel']['metadata']['contentMetadataViewModel']['metadataRows']
-                        if len(meta_rows) > 1:
-                            continue
-                        else:
+
+                        for meta_item in meta_rows:
+                            if meta_item.get("badges"):
+                                keep_going = False
+
+                        if keep_going:
                             count += 1
                             title = item['richItemRenderer']['content']['lockupViewModel']['metadata'][
                                 'lockupMetadataViewModel']['title']['content']
-                            views = meta_rows[0]['metadataParts'][0]['text']['content']
-                            when = meta_rows[0]['metadataParts'][1]['text']['content']
+                            views = meta_rows[-1]['metadataParts'][0]['text']['content']
+                            when = meta_rows[-1]['metadataParts'][1]['text']['content']
                             video_id = item['richItemRenderer']['content']['lockupViewModel']['contentId']
                             result.append(
                                 {
@@ -107,6 +114,9 @@ def load_videos(channel_type: str, channel_name: str) -> list:
                                     'video_id': video_id,
                                 }
                             )
+
+                        else:
+                            continue
 
                     if count == 3:
                         break
@@ -144,7 +154,7 @@ if __name__ == "__main__":
                     data[video_type][channel]['last_updated'] = str(
                         current_time)
                     modified = True
-                    logger.debug("%s first videos loaded %s", channel, new)
+                    logger.info("%s first videos loaded %s", channel, new)
                 else:
                     logger.warning("%s first videos not found", channel)
 
@@ -163,7 +173,7 @@ if __name__ == "__main__":
                     data[video_type][channel]['last_updated'] = str(
                         current_time)
                     modified = True
-                    logger.debug("%s new %s", channel, new)
+                    logger.info("%s new %s", channel, new)
 
                     keywords = data[video_type][channel].get("keywords")
                     title = new[0]['title']
@@ -196,7 +206,8 @@ if __name__ == "__main__":
                         ]
                         sent = slack_message(
                             passw=BOT_TOKEN,
-                            channel=channel_id,
+                            channel=os.getenv("SANDBOX_CHANNEL"),
+                            # channel=channel_id,
                             blocks=block,
                             text=f"@{channel} {title} ({views})",
                         )

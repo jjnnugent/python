@@ -206,8 +206,8 @@ if __name__ == "__main__":
                         ]
                         sent = slack_message(
                             passw=BOT_TOKEN,
-                            channel=os.getenv("SANDBOX_CHANNEL"),
-                            # channel=channel_id,
+                            # channel=os.getenv("SANDBOX_CHANNEL"),
+                            channel=channel_id,
                             blocks=block,
                             text=f"@{channel} {title} ({views})",
                         )

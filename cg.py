@@ -84,8 +84,7 @@ def main() -> None:
         load_dotenv(os.path.expanduser("~/python/.env"))
         slack_message(
             passw=os.getenv("WATCHER_TOKEN"),
-            channel="D06G24QH97W",
-            # channel=os.getenv("SANDBOX_CHANNEL"),
+            channel=os.getenv("SANDBOX_CHANNEL"),
             blocks=block,
             text=mobile_heading
         )

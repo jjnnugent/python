@@ -56,6 +56,7 @@ class SlackHandler(logging.Handler):
 
             # slagger = logging.getLogger(name="slack_sdk.web.base_client")
             # slagger.disabled = 1
+
             load_dotenv()
             slack_message(
                 passw=os.getenv("WATCHER_TOKEN"),

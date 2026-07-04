@@ -1,5 +1,6 @@
 from .altcaps import altcaps
 from .drive import drive
+from .gas import gas
 from .gld import gld
 from .help import help
 from .pm import pm

@@ -117,6 +117,33 @@ def main() -> None:
             except Exception as e:
                 logger.error("df list gen fail\n%s", e)
 
+        name.append("JAK")
+        url.append("n/a")
+        cpu.append("Intel Core i9-13900HX")
+        gpu.append("GeForce RTX 4080 Laptop GPU")
+        mem.append("16-5600")
+        screen.append("16\" 1600 240Hz")
+        storage.append("512GB")
+        price.append(float("1799.99"))
+
+        name.append("LIN")
+        url.append("n/a")
+        cpu.append("Intel Core i7-12800H")
+        gpu.append("GeForce RTX 3080 Ti Laptop GPU")
+        mem.append("32-4800")
+        screen.append("15.3\" 1080 360Hz")
+        storage.append("1TB")
+        price.append(float("1759.20"))
+
+        name.append("MAK")
+        url.append("n/a")
+        cpu.append("Intel Core i7-11800H @ 2.30GHz")
+        gpu.append("GeForce RTX 3070 Laptop GPU")
+        mem.append("16-2933")
+        screen.append("15.3\" 1080 360Hz")
+        storage.append("1TB")
+        price.append(float("1263.50"))
+
         try:
             gld_df = pd.DataFrame(
                 {
@@ -147,9 +174,11 @@ def main() -> None:
         df['gppd'] = round(df['score'] / df['price'], 3)
         df['tppd'] = round((df['multi'] + df['score']) / df['price'], 3)
 
+        # cpu.append("Intel Core i7-11800H @ 2.30GHz")
         remove_text = [
-            r"Intel Core (?:Ultra)?\s*\d\s*",
+            r"Intel Core(?:\s*Ultra)?\s*i?\d\-?\s*",
             r"AMD\s*",
+            r"\s*@\s*\d+\.\d+GHz",
             r"Ryzen (?:AI)?\s*\d\s*",
             r"Radeon\s*RX\s*",
             "GeForce RTX ",

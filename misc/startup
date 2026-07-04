@@ -4,8 +4,8 @@ tmux new-session -ds logs
 tmux split-window -t logs
 tmux split-window -t logs
 tmux split-window -t logs
-tmux send-keys -t logs.0 "uv run --directory ~/python/ tftbot.py" ENTER
-tmux send-keys -t logs.1 "uv run --directory ~/python/ watcher.py" ENTER
+tmux send-keys -t logs.0 "echo tftbot no longer supported" ENTER
+tmux send-keys -t logs.1 "echo watcher no longer supported" ENTER
 tmux send-keys -t logs.2 "uv run --directory ~/python/ meeseeks.py" ENTER
 tmux send-keys -t logs.3 "tail -f ~/logs/ash_nazg.log | grep -ve \"\[DEBUG\]\"" ENTER
 tmux select-pane -T tftbot -t logs.0

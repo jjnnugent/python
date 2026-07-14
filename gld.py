@@ -104,15 +104,15 @@ def main() -> None:
 
         for item in gld_new:
             try:
-                cpu.append(item['value'].get("cpu"))
-                gpu.append(item['value'].get("gpu").replace(
+                cpu.append(item['specs'].get("cpu"))
+                gpu.append(item['specs'].get("gpu").replace(
                     "NVIDIA", "GeForce") + " Laptop GPU")
-                mem.append(item['value'].get("memory"))
-                name.append(item['value'].get("laptop_name"))
-                price.append(float(item['value'].get("sale_price")))
-                screen.append(item['value'].get("screen"))
-                storage.append(item['value'].get("storage"))
-                url.append(item['value'].get("deal_url"))
+                mem.append(item['specs'].get("ram"))
+                name.append(item.get("title"))
+                price.append(item.get("currentPrice") / 100)
+                screen.append(item['specs'].get("screen"))
+                storage.append(item['specs'].get("storage"))
+                url.append(item.get("retailerUrl"))
 
             except Exception as e:
                 logger.error("df list gen fail\n%s", e)
@@ -124,25 +124,25 @@ def main() -> None:
         mem.append("16-5600")
         screen.append("16\" 1600 240Hz")
         storage.append("512GB")
-        price.append(float("1799.99"))
+        price.append(1799.99)
 
         name.append("LIN")
         url.append("n/a")
         cpu.append("Intel Core i7-12800H")
         gpu.append("GeForce RTX 3080 Ti Laptop GPU")
         mem.append("32-4800")
-        screen.append("15.3\" 1080 360Hz")
+        screen.append("15\" 1080 360Hz")
         storage.append("1TB")
-        price.append(float("1759.20"))
+        price.append(1759.20)
 
         name.append("MAK")
         url.append("n/a")
         cpu.append("Intel Core i7-11800H @ 2.30GHz")
         gpu.append("GeForce RTX 3070 Laptop GPU")
         mem.append("16-2933")
-        screen.append("15.3\" 1080 360Hz")
+        screen.append("15\" 1080 360Hz")
         storage.append("1TB")
-        price.append(float("1263.50"))
+        price.append(1263.50)
 
         try:
             gld_df = pd.DataFrame(
@@ -162,7 +162,7 @@ def main() -> None:
             logger.error(e)
 
         gld_df['gpu'] = gld_df['gpu'].str.replace(
-            pat=r" - \d*GB", repl="", case=False, regex=True)
+            pat=r"\s*-\s*\d*GB", repl="", case=False, regex=True)
 
         frame = gld_df.join(cpu_df.set_index("model"), on="cpu")
         df = frame.join(gpu_df.set_index("model"), on="gpu")
@@ -205,7 +205,8 @@ def main() -> None:
         sent = slack_message(
             timing=True,
             passw=os.getenv("WATCHER_TOKEN"),
-            channel=os.getenv("GAMING_CHANNEL"),
+            # channel=os.getenv("GAMING_CHANNEL"),
+            channel=os.getenv("SANDBOX_CHANNEL"),
             blocks=table_block,
             unfurl_links=False,
             text="Gaming Laptop Deals",

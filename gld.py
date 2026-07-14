@@ -205,8 +205,8 @@ def main() -> None:
         sent = slack_message(
             timing=True,
             passw=os.getenv("WATCHER_TOKEN"),
-            # channel=os.getenv("GAMING_CHANNEL"),
-            channel=os.getenv("SANDBOX_CHANNEL"),
+            channel=os.getenv("GAMING_CHANNEL"),
+            # channel=os.getenv("SANDBOX_CHANNEL"),
             blocks=table_block,
             unfurl_links=False,
             text="Gaming Laptop Deals",

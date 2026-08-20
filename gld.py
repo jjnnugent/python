@@ -77,18 +77,15 @@ def main() -> None:
         gpu_score = []
 
         for item in cpu_raw['data']:
-            if "Laptop" in item.get("cat") or "Mobile" in item.get("cat"):
+            if "Laptop" in item.get("cat") or "Mobile" in item.get("cat") or "AMD Ryzen 7 250" in item.get("name"):
                 cpu_model.append(item.get("name"))
                 cpu_score.append(int(item.get("cpumark").replace(",", "")))
             else:
                 continue
 
         for item in gpu_raw['data']:
-            if "Laptop" in item.get("cat") or "Mobile" in item.get("cat"):
-                gpu_model.append(item.get("name"))
-                gpu_score.append(int(item.get("g3d").replace(",", "")))
-            else:
-                continue
+            gpu_model.append(item.get("name"))
+            gpu_score.append(int(item.get("g3d").replace(",", "")))
 
         cpu_df = pd.DataFrame({'model': cpu_model, 'multi': cpu_score})
         gpu_df = pd.DataFrame({'model': gpu_model, 'score': gpu_score})
@@ -105,8 +102,11 @@ def main() -> None:
         for item in gld_new:
             try:
                 cpu.append(item['specs'].get("cpu"))
-                gpu.append(item['specs'].get("gpu").replace(
-                    "NVIDIA", "GeForce") + " Laptop GPU")
+                if "NVIDIA" in item['specs'].get("gpu"):
+                    gpu.append(item['specs'].get("gpu").replace(
+                        "NVIDIA", "GeForce") + " Laptop GPU")
+                else:
+                    gpu.append(item['specs'].get("gpu").replace("AMD ", ""))
                 mem.append(item['specs'].get("ram"))
                 name.append(item.get("title"))
                 price.append(item.get("currentPrice") / 100)
@@ -162,7 +162,7 @@ def main() -> None:
             logger.error(e)
 
         gld_df['gpu'] = gld_df['gpu'].str.replace(
-            pat=r"\s*-\s*\d*GB", repl="", case=False, regex=True)
+            pat=r"\s*-?\s*\d*GB", repl="", case=False, regex=True)
 
         frame = gld_df.join(cpu_df.set_index("model"), on="cpu")
         df = frame.join(gpu_df.set_index("model"), on="gpu")
@@ -176,25 +176,28 @@ def main() -> None:
 
         # cpu.append("Intel Core i7-11800H @ 2.30GHz")
         remove_text = [
-            r"Intel Core(?:\s*Ultra)?\s*i?\d\-?\s*",
-            r"AMD\s*",
-            r"\s*@\s*\d+\.\d+GHz",
-            r"Ryzen (?:AI)?\s*\d\s*",
-            r"Radeon\s*RX\s*",
-            "GeForce RTX ",
-            " Laptop GPU",
-            r"GB (?:LP)?DDR\dX?",
-            " RAM",
-            r" \d{4} x",
-            " display",
-            r" PCIe Gen \d",
-            " SSD",
+            r"\d{4}\s*x\s*",  # screen
+            r"(?:GB)?\s*(?:LP)?DDR5X?",  # ram
+            "PCIe",  # hdd
+            r"Gen\s*\d",  # hdd
+            "SSD",  # hdd
+            r"GeForce\s*RTX\s*",  # gpu
+            r"\s*Laptop GPU",  # gpu
+            "Radeon",  # gpu
+            r"\s*@\s*\d+\.\d+GHz",  # cpu
+            r"\s{2}",  # spaces
+            r"^\s*",  # strip
+            r"\s*$",  # strip
         ]
+
+        df = df.replace(to_replace="|".join(remove_text),
+                        value="", inplace=False, regex=True)
+
+        df['cpu'] = df['cpu'].str.replace(
+            pat=r"^(\w+).*?(\w+)$", repl=r"\1 \2", case=False, regex=True)
 
         df['brand'] = df['brand'].str.replace(
             pat=r"^(\w+).*$", repl=r"\1", case=False, regex=True)
-        df = df.replace(to_replace="|".join(remove_text),
-                        value="", inplace=False, regex=True)
 
         df = df[['price', 'cpu', 'gpu', 'multi', 'score', 'cppd', 'gppd', 'tppd',
                  'brand', 'screen', 'mem', 'ssd', 'link']]

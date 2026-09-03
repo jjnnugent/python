@@ -79,7 +79,6 @@ def main() -> None:
         for item in cpu_raw['data']:
             if "Laptop" in item.get("cat") or "Mobile" in item.get("cat") or "AMD Ryzen 7 250" in item.get("name"):
                 cpu_model.append(item.get("name").upper())
-                if cpu_model[-1].endswith("PLUS"):
                 cpu_score.append(int(item.get("cpumark").replace(",", "")))
             else:
                 continue

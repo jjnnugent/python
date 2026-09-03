@@ -62,7 +62,7 @@ def command_gas(ack, command, respond) -> None:
         channel=channel_id,
         user=user_id,
         blocks=block,
-        text="local gas prices"
+        text="best local gas prices"
     )
 
     if user_id != "U02S8PJP96H":

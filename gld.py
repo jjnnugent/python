@@ -78,13 +78,14 @@ def main() -> None:
 
         for item in cpu_raw['data']:
             if "Laptop" in item.get("cat") or "Mobile" in item.get("cat") or "AMD Ryzen 7 250" in item.get("name"):
-                cpu_model.append(item.get("name"))
+                cpu_model.append(item.get("name").upper())
+                if cpu_model[-1].endswith("PLUS"):
                 cpu_score.append(int(item.get("cpumark").replace(",", "")))
             else:
                 continue
 
         for item in gpu_raw['data']:
-            gpu_model.append(item.get("name"))
+            gpu_model.append(item.get("name").upper())
             gpu_score.append(int(item.get("g3d").replace(",", "")))
 
         cpu_df = pd.DataFrame({'model': cpu_model, 'multi': cpu_score})
@@ -101,12 +102,13 @@ def main() -> None:
 
         for item in gld_new:
             try:
-                cpu.append(item['specs'].get("cpu"))
+                cpu.append(item['specs'].get("cpu").upper())
                 if "NVIDIA" in item['specs'].get("gpu"):
-                    gpu.append(item['specs'].get("gpu").replace(
-                        "NVIDIA", "GeForce") + " Laptop GPU")
+                    gpu.append(item['specs'].get("gpu").upper().replace(
+                        "NVIDIA", "GEFORCE") + " LAPTOP GPU")
                 else:
-                    gpu.append(item['specs'].get("gpu").replace("AMD ", ""))
+                    gpu.append(item['specs'].get(
+                        "gpu").upper().replace("AMD ", ""))
                 mem.append(item['specs'].get("ram"))
                 name.append(item.get("title"))
                 price.append(item.get("currentPrice") / 100)
@@ -119,8 +121,8 @@ def main() -> None:
 
         name.append("JAK")
         url.append("n/a")
-        cpu.append("Intel Core i9-13900HX")
-        gpu.append("GeForce RTX 4080 Laptop GPU")
+        cpu.append("INTEL CORE I9-13900HX")
+        gpu.append("GEFORCE RTX 4080 LAPTOP GPU")
         mem.append("16-5600")
         screen.append("16\" 1600 240Hz")
         storage.append("512GB")
@@ -128,8 +130,8 @@ def main() -> None:
 
         name.append("LIN")
         url.append("n/a")
-        cpu.append("Intel Core i7-12800H")
-        gpu.append("GeForce RTX 3080 Ti Laptop GPU")
+        cpu.append("INTEL CORE I7-12800H")
+        gpu.append("GEFORCE RTX 3080 TI LAPTOP GPU")
         mem.append("32-4800")
         screen.append("15\" 1080 360Hz")
         storage.append("1TB")
@@ -137,8 +139,8 @@ def main() -> None:
 
         name.append("MAK")
         url.append("n/a")
-        cpu.append("Intel Core i7-11800H @ 2.30GHz")
-        gpu.append("GeForce RTX 3070 Laptop GPU")
+        cpu.append("INTEL CORE I7-11800H @ 2.30GHZ")
+        gpu.append("GEFORCE RTX 3070 LAPTOP GPU")
         mem.append("16-2933")
         screen.append("15\" 1080 360Hz")
         storage.append("1TB")
@@ -181,10 +183,11 @@ def main() -> None:
             "PCIe",  # hdd
             r"Gen\s*\d",  # hdd
             "SSD",  # hdd
-            r"GeForce\s*RTX\s*",  # gpu
-            r"\s*Laptop GPU",  # gpu
-            "Radeon",  # gpu
-            r"\s*@\s*\d+\.\d+GHz",  # cpu
+            r"GEFORCE\s*RTX\s*",  # gpu
+            r"\s*LAPTOP GPU",  # gpu
+            "RADEON",  # gpu
+            r"\s*PLUS",  # cpu
+            r"\s*@\s*\d+\.\d+GHZ",  # cpu
             r"\s{2}",  # spaces
             r"^\s*",  # strip
             r"\s*$",  # strip

@@ -19,7 +19,7 @@ logging.config.fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger("watchl")
 logger.addHandler(SlackHandler())
 load_dotenv(os.path.expanduser("~/python/.env"))
-RE_VIDEOS = re.compile(r"ytInitialData\s*=\s*({.*?)(?=;<\/)")
+RE_VIDEOS = re.compile(r"ytInitialData\s*=\s*({.*?})(?=;<\/)")
 BOT_TOKEN = os.getenv("WATCHER_TOKEN")
 
 

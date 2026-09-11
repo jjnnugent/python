@@ -49,6 +49,8 @@ def load_videos(channel_type: str, channel_name: str) -> list:
                 dump = json.loads(re_match.group(1))
             else:
                 logger.error("%s regex not found", channel_name)
+                with open(file=os.path.expanduser("~/data/regex-not-found.html"), mode="w") as file:
+                    file.write(response.text)
                 return []
 
             count = 0

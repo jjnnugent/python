@@ -25,6 +25,7 @@ def main() -> None:
 
     # video/mp4
     # address = "https://apod.nasa.gov/apod/ap250518.html"
+    # address = "https://apod.nasa.gov/apod/ap260913.html"
 
     # youtube
     # address = "https://apod.nasa.gov/apod/ap250506.html"
@@ -48,7 +49,8 @@ def main() -> None:
         desc_html = desc.html
         desc = desc.text()
         desc = re.sub(pattern=r"\s+", repl=" ", string=desc)
-        desc = re.sub(pattern=r"\s*explanation:\s*", repl="", string=desc, flags=re.I)
+        desc = re.sub(pattern=r"\s*explanation:\s*",
+                      repl="", string=desc, flags=re.I)
         if image:
             src = urljoin(base=address, url=image.attrs["src"])
             ext = os.path.splitext(src)[-1]

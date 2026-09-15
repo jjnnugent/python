@@ -1,174 +1,95 @@
-from logging.config import fileConfig
+import json
 import logging
 import os
 import re
-from time import sleep
-from urllib.parse import urljoin
 
-from curl_cffi import requests
+from logging.config import fileConfig
+from urllib.request import urlopen
+
 from dotenv import load_dotenv
 from selectolax.parser import HTMLParser
-
+from utils.slack import SlackHandler
 from utils.slack import slack_message
 
 
-load_dotenv()
+fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
+logger = logging.getLogger("apoday")
+logger.addHandler(SlackHandler())
+
+load_dotenv(os.path.expanduser("~/python/.env"))
 BOT = os.getenv("WATCHER_TOKEN")
 CHANNEL = os.getenv("APOD_CHANNEL")
-ICON = "https://ik.imagekit.io/eetmbg795/ngt1-br.png"
-USERNAME = "Neil deGod Tyson"
+# CHANNEL = os.getenv("SANDBOX_CHANNEL")
 
+# address = "https://apod.nasa.gov/apod/ap250919.html"  # image
+# address = "https://apod.nasa.gov/apod/ap260913.html"  # video/mp4
+# address = "https://apod.nasa.gov/apod/ap250506.html"  # youtube
 
-def main() -> None:
-    # image
-    # address = "https://apod.nasa.gov/apod/ap250919.html"
+try:
+    address = "https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=1"
+    with urlopen(url=address) as response:
+        json_bytes = response.read()
 
-    # video/mp4
-    # address = "https://apod.nasa.gov/apod/ap250518.html"
-    # address = "https://apod.nasa.gov/apod/ap260913.html"
+except Exception as err:
+    logger.error(err)
 
-    # youtube
-    # address = "https://apod.nasa.gov/apod/ap250506.html"
+json_data = json.loads(json_bytes)[0]
+desc_data = json_data.get("explanation")
+html_data = json_data.get("basic_html")
+titl_data = json_data.get("title")
 
-    # mirror
-    # address = "http://sprite.phys.ncku.edu.tw/astrolab/mirrors/apod_e/apod.html"
+tree = HTMLParser(html=html_data)
+node = tree.css_first("img") or tree.css_first(
+    "source") or tree.css_first("iframe")
 
-    address = "https://apod.nasa.gov/apod/astropix.html"
-    response = requests.get(url=address)
-    tree = HTMLParser(html=response.text)
+if not node:
+    logger.warning("node not found")
 
-    frame = tree.css_first("iframe")
-    image = tree.css_first("img")
-    name = tree.css_first("b")
-    source = tree.css_first("source")
-    if name:
-        name = name.text(strip=True)
-
-    desc = tree.css_first("body > p")
-    if desc:
-        desc_html = desc.html
-        desc = desc.text()
-        desc = re.sub(pattern=r"\s+", repl=" ", string=desc)
-        desc = re.sub(pattern=r"\s*explanation:\s*",
-                      repl="", string=desc, flags=re.I)
-        if image:
-            src = urljoin(base=address, url=image.attrs["src"])
-            ext = os.path.splitext(src)[-1]
-            download = requests.get(url=src).content
-            file_path = os.path.expanduser("~/data/") + "apod" + ext
-            with open(file=file_path, mode="wb") as file:
-                file.write(download)
-
-            slack_message(
-                passw=BOT,
-                upload=True,
-                channel=CHANNEL,
-                file=file_path,
-                title=name,
-                alt_txt=desc,
-            )
-
-        elif frame or source:
-            if frame:
-                media = "https://www.youtube.com/watch?v=" + re.search(
-                    pattern=r"(?<=youtube).*?([\w\-]{11})", string=frame.attrs["src"]
-                ).group(1)
-            else:
-                media = urljoin(base=address, url=source.attrs["src"])
-
-            # extend links
-            desc_html = re.sub(
-                pattern=r"(ap\d+?\.html?)",
-                repl=urljoin(base=address, url=r"\1"),
-                string=desc_html,
-                flags=re.I,
-            )
-
-            # format links for slack
-            desc_html = re.sub(
-                pattern=r"<\s*a.*?(?<=href)=\"([^\"]+)[^>]+>([^<]+)<\s*/\s*a\s*>",
-                repl=r"<\1|\2>",
-                string=desc_html,
-                flags=re.I,
-            )
-
-            # clean html
-            desc_html = re.sub(
-                pattern=r"<\/?[bipus]>|\s*explanation:\s*",
-                repl="",
-                string=desc_html,
-                flags=re.I,
-            )
-
-            # format lines and spaces
-            desc_html = re.sub(
-                pattern=r"\s+|\n", repl=" ", string=desc_html, flags=re.I
-            )
-            desc_html = desc_html.strip()
-
-            block = [
-                {
-                    "type": "context",
-                    "elements": [
-                        {"type": "mrkdwn", "text": desc if frame else desc_html}
-                    ],
-                },
-                {"type": "divider"},
-                {
-                    "type": "context",
-                    "elements": [{"type": "mrkdwn", "text": media}],
-                },
-            ]
-
-            sent = slack_message(
-                passw=BOT,
-                timing=True,
-                channel=CHANNEL,
-                text=name,
-                blocks=block,
-                unfurl_links=False,
-                unfurl_media=True,
-                icon_url=ICON,
-                username=USERNAME,
-            )
-
-            if frame:
-                sleep(5)
-
-                block = [
-                    {
-                        "type": "context",
-                        "elements": [{"type": "mrkdwn", "text": desc_html}],
-                    },
-                    {"type": "divider"},
-                    {
-                        "type": "context",
-                        "elements": [{"type": "mrkdwn", "text": media}],
-                    },
-                ]
-
-                slack_message(
-                    passw=BOT,
-                    update=True,
-                    channel=CHANNEL,
-                    ts=sent,
-                    blocks=block,
-                    text=name,
-                )
-
-    else:
+file_url = node.attrs['src']
+if re.search(pattern=r"www\.youtube\.com", string=file_url, flags=re.I):
+    video_id = re.search(
+        pattern=r"(?<=\/)([\w\-]{11})", string=file_url, flags=re.I)
+    if video_id:
+        yt_url = "https://www.youtube.com/watch?v=" + video_id.group(1)
+        slack_block = [
+            {
+                "type": "section",
+                "text": {
+                        "type": "mrkdwn",
+                        "text": yt_url,
+                }
+            }
+        ]
         slack_message(
             passw=BOT,
             channel=CHANNEL,
-            text=f"APOD not found\n{address}",
-            icon_url=ICON,
-            username=USERNAME,
+            blocks=slack_block,
+            text="Astronomy Video of the Day",
         )
+    else:
+        logger.warning("video id not found")
 
-        fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
-        logger = logging.getLogger("apod--")
-        logger.warning("no image/video found")
+else:
+    file_ext = os.path.splitext(file_url)
+    file_name = "apod" + file_ext[-1]
 
+    with urlopen(url=file_url) as response:
+        download = response.read()
 
-if __name__ == "__main__":
-    main()
+    with open(file=os.path.expanduser("~/data/" + file_name), mode="wb") as f:
+        f.write(download)
+
+    tree_desc = HTMLParser(html=desc_data)
+    desc = tree_desc.text()
+    desc = re.sub(pattern=r"Explanation:?\s*|APOD's main NASA site.*",
+                  repl="", string=desc, flags=re.I)
+    desc = re.sub(pattern=r"\s{2,}", repl=" ", string=desc, flags=re.I)
+
+    slack_message(
+        passw=BOT,
+        upload=True,
+        file=os.path.expanduser("~/data/" + file_name),
+        title=titl_data,
+        alt_txt=desc,
+        channel=CHANNEL,
+    )

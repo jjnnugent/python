@@ -81,7 +81,7 @@ else:
 
     tree_desc = HTMLParser(html=desc_data)
     desc = tree_desc.text()
-    desc = re.sub(pattern=r"Explanation:?\s*|APOD's main NASA site.*",
+    desc = re.sub(pattern=r"Explanation:?\s*|APOD's email.*",
                   repl="", string=desc, flags=re.I)
     desc = re.sub(pattern=r"\s{2,}", repl=" ", string=desc, flags=re.I)
 

@@ -1,10 +1,9 @@
 import os
 import re
 
-from logging.config import fileConfig, logging
-
 from curl_cffi import requests
 from dotenv import load_dotenv
+from logging.config import fileConfig, logging
 from selectolax.lexbor import LexborHTMLParser
 from slack_sdk import WebClient
 from slack_sdk.models import blocks
@@ -13,7 +12,7 @@ from slack_sdk.models import blocks
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger("apod--")
 
-load_dotenv(os.path.expanduser("~/python.env"))
+load_dotenv(os.path.expanduser("~/python/.env"))
 BOT = os.getenv("WATCHER_TOKEN")
 CHANNEL = os.getenv("APOD_CHANNEL")
 client = WebClient(token=BOT)

@@ -74,26 +74,26 @@ def command_gas(ack, command, respond) -> None:
         )
 
 
-@ mr_meeseeks.command("/gld")
-def command_gld(ack, command, respond) -> None:
-    ack()
-    if command["text"] == "help":
-        result = help(slash=command["command"])
-        respond(text=result)
-    else:
-        result = gld(text=command["text"])
-        respond(response_type="ephemeral", text=result)
+# @ mr_meeseeks.command("/gld")
+# def command_gld(ack, command, respond) -> None:
+#     ack()
+#     if command["text"] == "help":
+#         result = help(slash=command["command"])
+#         respond(text=result)
+#     else:
+#         result = gld(text=command["text"])
+#         respond(response_type="ephemeral", text=result)
 
 
-@ mr_meeseeks.command("/pm")
-def command_pm(ack, command, respond) -> None:
-    ack()
-    if command["text"] == "help":
-        result = help(slash=command["command"])
-        respond(text=result)
-    else:
-        result = pm(text=command["text"])
-        respond(response_type="ephemeral", text=result)
+# @ mr_meeseeks.command("/pm")
+# def command_pm(ack, command, respond) -> None:
+#     ack()
+#     if command["text"] == "help":
+#         result = help(slash=command["command"])
+#         respond(text=result)
+#     else:
+#         result = pm(text=command["text"])
+#         respond(response_type="ephemeral", text=result)
 
 
 @ mr_meeseeks.command("/shop")

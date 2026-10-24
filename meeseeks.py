@@ -6,7 +6,6 @@ from slack_bolt import App
 from slack_sdk import WebClient
 from utils import *
 
-
 load_dotenv(os.path.expanduser("~/python/.env"))
 logging.basicConfig(level=logging.DEBUG)
 client = WebClient(token=os.getenv("MEESEEKS_TOKEN"))

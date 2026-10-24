@@ -2,6 +2,8 @@
 # https://www.google.com/maps/dir/?api=1&origin=Paris%2CFrance&destination=Cherbourg%2CFrance&travelmode=driving&waypoints=Palace+of+Versailles%7CChartres+Cathedral%7CCathedral+of+Saint+Julian+of+Le+Mans%7CCaen+Castle
 # pre + origin + destination + travelmode + waypoints = x | y | z
 import re
+
+
 def drive(text: str) -> str:
     prefix = "https://www.google.com/maps/dir/?api=1"
     destination = "&destination="

@@ -1,10 +1,9 @@
 import asyncio
-import pandas as pd
 import json
 import os
 
+import pandas as pd
 from py_gasbuddy import GasBuddy
-
 
 fsolver = "http://192.168.50.5:8191/v1"
 with open(file=os.path.expanduser("~/data/gas_sauce.json"), mode="r") as file:

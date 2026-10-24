@@ -3,11 +3,8 @@ from random import choice
 from time import sleep
 
 from dotenv import load_dotenv
-
-from utils.file import load_json
-from utils.file import save_json
+from utils.file import load_json, save_json
 from utils.slack import slack_message
-
 
 load_dotenv()
 BOT = os.getenv("DOZAR_TOKEN")
@@ -22,10 +19,14 @@ quotes = [
     "MMMEEEOOOOOOOOOOOOOWW!!",
     "I require sustenance peasants. See to it at once!",
     "Want me to plop? You know what to do.",
-    # "Who is going to feed me? :simple_smile:",
     "Who loves me more? :smiley_cat:",
     "You feed me or I feed on you.. your choice.",
     "You wouldn't like me when I'm angry.",
+    "Food. Heard of it?",
+    "Food please.",
+    "What's on the menu today?",
+    "It's time.",
+    "May I inquire about today's specials?",
 ]
 
 reminders = [
@@ -34,12 +35,17 @@ reminders = [
     "Anyone home?",
     "Curse those magic screens!",
     ":pleading_face:",
+    ":weary:",
+    ":eyes:",
     "You didn't forget about me did you? :crying_cat_face:",
     "Food?",
     "Getting hangry...",
     "Hello?",
     "Meow.",
     "Still waiting...",
+    "By all means take your precious time.",
+    "My patience is wearing thin...",
+    "WHERE IS MY WAITER?",
 ]
 
 
@@ -59,11 +65,13 @@ def dozar_was_fed(ts: str) -> bool:
             ):
                 user_ids = emoji.get("users")
                 if user_ids:
-                    scores = load_json(os.path.expanduser("~/data/dozar_score.json"))
+                    scores = load_json(os.path.expanduser(
+                        "~/data/dozar_score.json"))
                     for user_id in user_ids:
                         scores[user_id] += 1
                     save_json(
-                        data=scores, name=os.path.expanduser("~/data/dozar_score.json")
+                        data=scores, name=os.path.expanduser(
+                            "~/data/dozar_score.json")
                     )
 
                 return True

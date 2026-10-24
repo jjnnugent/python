@@ -1,8 +1,7 @@
 import os
-import re
 
-from dotenv import load_dotenv
 import pandas as pd
+from dotenv import load_dotenv
 
 
 def gas(user_id: str) -> str:

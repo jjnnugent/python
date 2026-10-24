@@ -2,12 +2,10 @@ import os
 import random
 import time
 
+import pandas as pd
 from curl_cffi import requests
 from dotenv import load_dotenv
-import pandas as pd
-
-from utils.file import load_json
-from utils.file import save_json
+from utils.file import load_json, save_json
 from utils.slack import slack_message
 
 
@@ -43,8 +41,8 @@ def main() -> None:
         for item in dump:
             for key, value in item.items():
                 locs.append(key)
-                prem.append(item[key].get("premium"))
-                reg.append(item[key].get("regular"))
+                prem.append(value.get("premium"))
+                reg.append(value.get("regular"))
 
         data = {
             "locations": locs,

@@ -1,13 +1,13 @@
+import logging
 import os
 import re
+from logging.config import fileConfig
 
 from curl_cffi import requests
 from dotenv import load_dotenv
-from logging.config import fileConfig, logging
 from selectolax.lexbor import LexborHTMLParser
 from slack_sdk import WebClient
 from slack_sdk.models import blocks
-
 
 fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger("apod--")
@@ -34,28 +34,33 @@ def main() -> None:
 
     warning = False
     if node:
-        media_node = node.css_first("img") or node.css_first(
-            "source") or node.css_first("iframe")
+        media_node = (
+            node.css_first("img")
+            or node.css_first("source")
+            or node.css_first("iframe")
+        )
 
         if media_node:
             media_title = node.css_first(
-                "h1.display-48.margin-top-0.margin-bottom-3, h2.display-48.margin-top-0.margin-bottom-3").text()
-            media_src = media_node.attrs['src'].split("?")[0]
+                "h1.display-48.margin-top-0.margin-bottom-3, h2.display-48.margin-top-0.margin-bottom-3"
+            ).text()
+            media_src = media_node.attrs["src"].split("?")[0]
             media_type = media_node.tag
 
             explanation = re.sub(
                 pattern=r"\s*Explanation\s*:?\s*|\s(?=\s)|\s(?=[!',\.:;\?])",
                 repl="",
                 string=LexborHTMLParser(
-                    html=node.css_first(
-                        "p.media-detail-hero__description").html.split("<br")[0]
+                    html=node.css_first("p.media-detail-hero__description").html.split(
+                        "<br"
+                    )[0]
                 ).text(),
-                flags=re.I,
+                flags=re.IGNORECASE,
             )
 
             if media_type == "img":
                 file_name = "apod" + os.path.splitext(media_src)[-1]
-                media_alt = media_node.attrs['alt']
+                media_alt = media_node.attrs["alt"]
                 media_bytes = requests.get(url=media_src).content
 
                 client.files_upload_v2(
@@ -68,23 +73,29 @@ def main() -> None:
 
             elif media_type == "source" or media_type == "iframe":
                 media_alt = tree.css_first(
-                    "meta[property=\"og:image:alt\"]").attributes.get("content")
+                    'meta[property="og:image:alt"]'
+                ).attributes.get("content")
 
                 if media_type == "source":
                     media_url = tree.css_first(
-                        "meta[property=\"og:image\"").attributes.get("content")
+                        'meta[property="og:image"'
+                    ).attributes.get("content")
                     video_url = media_src
 
                 else:
                     video_id = re.search(
                         pattern=r"youtu(?:\.be|be.com).*?/([\w\-]{11})",
                         string=media_src,
-                        flags=re.I
+                        flags=re.IGNORECASE,
                     )
 
                     if video_id:
-                        media_url = f"https://i.ytimg.com/vi/{video_id.group(1)}/hqdefault.jpg"
-                        video_url = f"https://www.youtube.com/watch?v={video_id.group(1)}"
+                        media_url = (
+                            f"https://i.ytimg.com/vi/{video_id.group(1)}/hqdefault.jpg"
+                        )
+                        video_url = (
+                            f"https://www.youtube.com/watch?v={video_id.group(1)}"
+                        )
 
                     else:
                         warning = True
@@ -101,8 +112,8 @@ def main() -> None:
                         accessory=blocks.LinkButtonElement(
                             text="Watch video",
                             url=video_url,
-                        )
-                    )
+                        ),
+                    ),
                 ]
 
                 client.chat_postMessage(

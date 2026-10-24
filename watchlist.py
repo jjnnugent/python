@@ -1,19 +1,15 @@
 import datetime
-import logging
 import json
+import logging
 import os
 import re
-
 from random import randint
 from time import sleep
 
 from curl_cffi import requests
 from dotenv import load_dotenv
-from utils.file import load_json
-from utils.file import save_json
-from utils.slack import SlackHandler
-from utils.slack import slack_message
-
+from utils.file import load_json, save_json
+from utils.slack import SlackHandler, slack_message
 
 logging.config.fileConfig(fname=os.path.expanduser("~/logs/logging.conf"))
 logger = logging.getLogger("watchl")
@@ -143,10 +139,10 @@ if __name__ == "__main__":
     data = load_json(name=os.path.expanduser("~/data/watchlist.json"))
     for video_type, entry in data.items():
         for channel in entry:
-            channel_days = data[video_type][channel].get("days_of_week")
-            channel_hours = data[video_type][channel].get("hour_of_day")
-            channel_id = data[video_type][channel].get("slack_channel")
-            old = data[video_type][channel].get("videos")
+            channel_days = entry[channel].get("days_of_week")
+            channel_hours = entry[channel].get("hour_of_day")
+            channel_id = entry[channel].get("slack_channel")
+            old = entry[channel].get("videos")
 
             if len(old) == 0:
                 new = load_videos(channel_type=video_type,
@@ -177,11 +173,11 @@ if __name__ == "__main__":
                     modified = True
                     logger.info("%s new %s", channel, new)
 
-                    keywords = data[video_type][channel].get("keywords")
+                    keywords = entry[channel].get("keywords")
                     title = new[0]['title']
                     if keywords:
                         re_match = re.search(
-                            pattern=keywords, string=title, flags=re.I)
+                            pattern=keywords, string=title, flags=re.IGNORECASE)
                         if re_match:
                             update_slack = True
                     else:

@@ -1,5 +1,5 @@
 def help(slash: str) -> str:
-    tip = str()
+    tip = ""
     match slash:
         case "/altcaps":
             tip = "To alternate capital letters: `/altcaps hello world`\n```output:\nhELlo WORld```"

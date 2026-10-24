@@ -1,15 +1,14 @@
 [project]
 name = "python"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13, <3.14"
 dependencies = [
-    "curl-cffi>=0.13.0",
+    "curl-cffi>=0.16.3",
+    "discord-py>=2.7.1",
     "dotenv>=0.9.9",
-    "pandas>=2.3.3",
-    "py-gasbuddy>=0.6.0",
-    "selectolax>=0.4.0",
-    "slack-bolt>=1.26.0",
-    "slack-sdk>=3.37.0",
+    "pandas>=3.1.0",
+    "py-gasbuddy>=0.7.2",
+    "selectolax>=1.0.2",
+    "slack-bolt>=1.30.0",
+    "slack-sdk>=3.45.0",
 ]

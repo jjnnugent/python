@@ -1,17 +1,13 @@
-from logging.config import fileConfig
-
 import logging
 import os
-
-from curl_cffi import requests
-from dotenv import load_dotenv
-from utils.file import load_json
-from utils.file import save_json
-from utils.slack import SlackHandler
-from utils.slack import slack_message
+from logging.config import fileConfig
 
 import pandas as pd
+from curl_cffi import requests
+from dotenv import load_dotenv
 
+from utils.file import load_json, save_json
+from utils.slack import SlackHandler, slack_message
 
 load_dotenv(os.path.expanduser("~/python/.env"))
 fileConfig(os.path.expanduser("~/logs/logging.conf"))
@@ -76,19 +72,23 @@ def main() -> None:
         gpu_model = []
         gpu_score = []
 
-        for item in cpu_raw['data']:
-            if "Laptop" in item.get("cat") or "Mobile" in item.get("cat") or "AMD Ryzen 7 250" in item.get("name"):
+        for item in cpu_raw["data"]:
+            if (
+                "Laptop" in item.get("cat")
+                or "Mobile" in item.get("cat")
+                or "AMD Ryzen 7 250" in item.get("name")
+            ):
                 cpu_model.append(item.get("name").upper())
                 cpu_score.append(int(item.get("cpumark").replace(",", "")))
             else:
                 continue
 
-        for item in gpu_raw['data']:
+        for item in gpu_raw["data"]:
             gpu_model.append(item.get("name").upper())
             gpu_score.append(int(item.get("g3d").replace(",", "")))
 
-        cpu_df = pd.DataFrame({'model': cpu_model, 'multi': cpu_score})
-        gpu_df = pd.DataFrame({'model': gpu_model, 'score': gpu_score})
+        cpu_df = pd.DataFrame({"model": cpu_model, "multi": cpu_score})
+        gpu_df = pd.DataFrame({"model": gpu_model, "score": gpu_score})
 
         cpu = []
         gpu = []
@@ -101,18 +101,19 @@ def main() -> None:
 
         for item in gld_new:
             try:
-                cpu.append(item['specs'].get("cpu").upper())
-                if "NVIDIA" in item['specs'].get("gpu"):
-                    gpu.append(item['specs'].get("gpu").upper().replace(
-                        "NVIDIA", "GEFORCE") + " LAPTOP GPU")
+                cpu.append(item["specs"].get("cpu").upper())
+                if "NVIDIA" in item["specs"].get("gpu"):
+                    gpu.append(
+                        item["specs"].get("gpu").upper().replace("NVIDIA", "GEFORCE")
+                        + " LAPTOP GPU"
+                    )
                 else:
-                    gpu.append(item['specs'].get(
-                        "gpu").upper().replace("AMD ", ""))
-                mem.append(item['specs'].get("ram"))
+                    gpu.append(item["specs"].get("gpu").upper().replace("AMD ", ""))
+                mem.append(item["specs"].get("ram"))
                 name.append(item.get("title"))
                 price.append(item.get("currentPrice") / 100)
-                screen.append(item['specs'].get("screen"))
-                storage.append(item['specs'].get("storage"))
+                screen.append(item["specs"].get("screen"))
+                storage.append(item["specs"].get("storage"))
                 url.append(item.get("retailerUrl"))
 
             except Exception as e:
@@ -123,7 +124,7 @@ def main() -> None:
         cpu.append("INTEL CORE I9-13900HX")
         gpu.append("GEFORCE RTX 4080 LAPTOP GPU")
         mem.append("16-5600")
-        screen.append("16\" 1600 240Hz")
+        screen.append('16" 1600 240Hz')
         storage.append("512GB")
         price.append(1799.99)
 
@@ -132,7 +133,7 @@ def main() -> None:
         cpu.append("INTEL CORE I7-12800H")
         gpu.append("GEFORCE RTX 3080 TI LAPTOP GPU")
         mem.append("32-4800")
-        screen.append("15\" 1080 360Hz")
+        screen.append('15" 1080 360Hz')
         storage.append("1TB")
         price.append(1759.20)
 
@@ -141,7 +142,7 @@ def main() -> None:
         cpu.append("INTEL CORE I7-11800H @ 2.30GHZ")
         gpu.append("GEFORCE RTX 3070 LAPTOP GPU")
         mem.append("16-2933")
-        screen.append("15\" 1080 360Hz")
+        screen.append('15" 1080 360Hz')
         storage.append("1TB")
         price.append(1263.50)
 
@@ -162,8 +163,9 @@ def main() -> None:
         except Exception as e:
             logger.error(e)
 
-        gld_df['gpu'] = gld_df['gpu'].str.replace(
-            pat=r"\s*-?\s*\d*GB", repl="", case=False, regex=True)
+        gld_df["gpu"] = gld_df["gpu"].str.replace(
+            pat=r"\s*-?\s*\d*GB", repl="", case=False, regex=True
+        )
 
         frame = gld_df.join(cpu_df.set_index("model"), on="cpu")
         df = frame.join(gpu_df.set_index("model"), on="gpu")
@@ -171,9 +173,9 @@ def main() -> None:
         # df['link'] = df['link'].str.replace(
         #     pat=r"^(.*)$", repl="[\1](\1)", case=False, regex=True)
 
-        df['cppd'] = round(df['multi'] / df['price'], 3)
-        df['gppd'] = round(df['score'] / df['price'], 3)
-        df['tppd'] = round((df['multi'] + df['score']) / df['price'], 3)
+        df["cppd"] = round(df["multi"] / df["price"], 3)
+        df["gppd"] = round(df["score"] / df["price"], 3)
+        df["tppd"] = round((df["multi"] + df["score"]) / df["price"], 3)
 
         # cpu.append("Intel Core i7-11800H @ 2.30GHz")
         remove_text = [
@@ -192,19 +194,37 @@ def main() -> None:
             r"\s*$",  # strip
         ]
 
-        df = df.replace(to_replace="|".join(remove_text),
-                        value="", inplace=False, regex=True)
+        df = df.replace(
+            to_replace="|".join(remove_text), value="", inplace=False, regex=True
+        )
 
-        df['cpu'] = df['cpu'].str.replace(
-            pat=r"^(\w+).*?(\w+)$", repl=r"\1 \2", case=False, regex=True)
+        df["cpu"] = df["cpu"].str.replace(
+            pat=r"^(\w+).*?(\w+)$", repl=r"\1 \2", case=False, regex=True
+        )
 
-        df['brand'] = df['brand'].str.replace(
-            pat=r"^(\w+).*$", repl=r"\1", case=False, regex=True)
+        df["brand"] = df["brand"].str.replace(
+            pat=r"^(\w+).*$", repl=r"\1", case=False, regex=True
+        )
 
-        df = df[['price', 'cpu', 'gpu', 'multi', 'score', 'cppd', 'gppd', 'tppd',
-                 'brand', 'screen', 'mem', 'ssd', 'link']]
+        df = df[
+            [
+                "price",
+                "cpu",
+                "gpu",
+                "multi",
+                "score",
+                "cppd",
+                "gppd",
+                "tppd",
+                "brand",
+                "screen",
+                "mem",
+                "ssd",
+                "link",
+            ]
+        ]
 
-        df.sort_values(by=['tppd'], ascending=False, inplace=True)
+        df.sort_values(by=["tppd"], ascending=False, inplace=True)
         table_block = markdown_table_block(df)
 
         sent = slack_message(

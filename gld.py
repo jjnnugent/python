@@ -73,15 +73,8 @@ def main() -> None:
         gpu_score = []
 
         for item in cpu_raw["data"]:
-            if (
-                "Laptop" in item.get("cat")
-                or "Mobile" in item.get("cat")
-                or "AMD Ryzen 7 250" in item.get("name")
-            ):
-                cpu_model.append(item.get("name").upper())
-                cpu_score.append(int(item.get("cpumark").replace(",", "")))
-            else:
-                continue
+            cpu_model.append(item.get("name").upper())
+            cpu_score.append(int(item.get("cpumark").replace(",", "")))
 
         for item in gpu_raw["data"]:
             gpu_model.append(item.get("name").upper())
@@ -230,7 +223,7 @@ def main() -> None:
         sent = slack_message(
             timing=True,
             passw=os.getenv("WATCHER_TOKEN"),
-            channel=os.getenv("GAMING_CHANNEL"),
+            channel=os.getenv("TECH_CHANNEL"),
             # channel=os.getenv("SANDBOX_CHANNEL"),
             blocks=table_block,
             unfurl_links=False,
